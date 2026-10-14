@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($scope, $timeout) {
+    var c = this;
+    // ✅ STACKED TOASTS 
+    c.toasts = [];
+
+
+    c.addToast = function(type, message) {
+        var toast = {
+            type: type,
+            message: message
+        };
+        c.toasts.push(toast);
+
+
+        if (type !== 'error') {
+            $timeout(function() {
+                var index = c.toasts.indexOf(toast);
+                if (index > -1) {
+                    c.toasts.splice(index, 1);
+                }
+            }, 5000);
+        }
+    };
+
+
+    c.removeToast = function(index) {
+        c.toasts.splice(index, 1);
+    };
+
+
+    c.clearErrorToasts = function() {
+        c.toasts = c.toasts.filter(function(toast) {
+            return toast.type !== 'error';
+        });
+    };
+
+
+    c.tenants = [];
+
+
+    c.loadTenants = function() {
+        c.server.get({
+            action: 'getTenants'
+        }).then(function(res) {
+            var tenants = res.data.tenants || [];
+            tenants.forEach(function(t) {
+                t.show_warning = (t.show_warning == 'true' || t.show_warning == '1');
+                t.warning_visible = false;
+            });
+            c.tenants = tenants;
+        });
+    };
+
+
+    c.$onInit = function() {
+        c.loadTenants();
+    };
+
+
+    $scope.$on('setup.reset', function() {
+        c.tenants = [];
+    });
+
+
+    $scope.$on('setup.completed', function() {
+        $timeout(function() {
+            c.loadTenants();
+        }, 2000);
+    });
+
+
+    // Warn when user activates a flagged tenant
+    c.onActiveChange = function(tenant) {
+
+
+        if (tenant.active !== 'true') {
+            tenant.warning_visible = false;
+            return;
+        }
+
+
+        if (tenant.show_warning) {
+            tenant.warning_visible = true;
+            c.addToast(
+                'error',
+                '⚠️ Warning: "' + tenant.tenant +
+                '" was not found in the latest WEX API response. ' +
+                'It may have been manually created or deleted from WEX. ' +
+                'It will be deactivated on the next refresh.'
+            );
+        }
+    };
+
+
+    c.saveAll = function() {
+        var payload = [];
+        c.tenants.forEach(function(t) {
+            payload.push({
+                sys_id: t.sys_id,
+                active: t.active
+            });
+        });
+
+
+        c.server.get({
+            action: 'saveAll',
+            tenants: payload
+        }).then(function(res) {
+            $timeout(function() {
+                c.loadTenants();
+            }, 500);
+
+
+            $timeout(function() {
+                c.clearErrorToasts();
+
+
+                if (res.data.saveResult && res.data.saveResult.success) {
+                    var warnings = res.data.saveResult.warnings || [];
+                    if (warnings.length > 0) {
+                        c.addToast('error',
+                            '⚠️ Saved, but tenant(s) "' + warnings.join(', ') +
+                            '" were not found in the latest WEX API response and will be deactivated on the next refresh.');
+                    } else {
+                        c.addToast('success', 'All changes saved ✅');
+                    }
+                } else {
+                    c.addToast('error', 'Error saving changes ❌');
+                }
+            }, 800);
+        });
+    };
+
+
+    c.refreshTenants = function() {
+        c.server.get({
+            action: 'refreshTenants'
+        }).then(function() {
+            $timeout(function() {
+                c.loadTenants();
+            }, 2000);
+
+
+            $timeout(function() {
+                c.clearErrorToasts();
+                c.addToast('success', 'Tenants refreshed ✅');
+            }, 2500);
+        });
+    };
+};]]></client_script>
+        <controller_as>c</controller_as>
+        <css>/* ═══════════════════════════════════════════&#13;
+   PANEL — matches hp-wxp-event-management-status&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget {&#13;
+  border: 2px solid #e5e7eb !important;&#13;
+  border-radius: 10px;&#13;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);&#13;
+  position: relative;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .panel-heading {&#13;
+  background: #f9fafb !important;&#13;
+  border-bottom: 1px solid #e5e7eb;&#13;
+  padding: 10px 14px;&#13;
+  border-radius: 10px 10px 0 0;&#13;
+}&#13;
+&#13;
+.mapping-subtitle {&#13;
+  color: #64748b;&#13;
+  font-size: 13px;&#13;
+  margin: 0 0 16px 0;&#13;
+}&#13;
+/* ═══════════════════════════════════════════&#13;
+   GLOBAL TOAST (TOP RIGHT)&#13;
+   ═══════════════════════════════════════════ */&#13;
+.toast-container {&#13;
+  position: fixed;&#13;
+  top: 20px;&#13;
+  right: 20px;&#13;
+  z-index: 9999;&#13;
+  display: flex;&#13;
+  flex-direction: column;&#13;
+  gap: 12px;&#13;
+}&#13;
+.tenant-toast-global {&#13;
+  position: relative;&#13;
+  background: #ecfdf5;&#13;
+  color: #065f46;&#13;
+  border: 1px solid #a7f3d0;&#13;
+  padding: 14px 40px 14px 14px;&#13;
+  border-radius: 8px;&#13;
+  font-size: 14px;&#13;
+  font-weight: 500;&#13;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);&#13;
+  max-width: 350px;&#13;
+  animation: slideIn 0.3s ease;&#13;
+}&#13;
+&#13;
+&#13;
+.tenant-toast-global.toast-error {&#13;
+  background: #fef2f2;&#13;
+  color: #991b1b;&#13;
+  border-color: #fecaca;&#13;
+}&#13;
+&#13;
+&#13;
+.toast-text {&#13;
+  display: block;&#13;
+}&#13;
+&#13;
+&#13;
+.toast-close {&#13;
+  position: absolute;&#13;
+  top: 8px;&#13;
+  right: 10px;&#13;
+  cursor: pointer;&#13;
+  font-weight: bold;&#13;
+  font-size: 14px;&#13;
+}&#13;
+&#13;
+&#13;
+.toast-close:hover {&#13;
+  opacity: 0.6;&#13;
+}&#13;
+&#13;
+&#13;
+@keyframes slideIn {&#13;
+  from {&#13;
+    opacity: 0;&#13;
+    transform: translateX(20px);&#13;
+  }&#13;
+  to {&#13;
+    opacity: 1;&#13;
+    transform: translateX(0);&#13;
+  }&#13;
+}&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   HEADER — flex layout with title + buttons&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .header-flex {&#13;
+  display: flex;&#13;
+  justify-content: space-between;&#13;
+  align-items: center;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .title {&#13;
+  font-size: 16px;&#13;
+  font-weight: 600;&#13;
+  color: #1f2937;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .header-actions {&#13;
+  display: flex;&#13;
+  gap: 8px;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   PANEL BODY&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .panel-body {&#13;
+  padding: 14px;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   TABLE — matches status widget&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .table {&#13;
+  background: white;&#13;
+  border-radius: 8px;&#13;
+  margin-bottom: 0;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .table thead {&#13;
+  background: #f9fafb;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .table thead th {&#13;
+  font-size: 13px;&#13;
+  font-weight: 600;&#13;
+  color: #1f2937;&#13;
+  border-bottom: 2px solid #e5e7eb;&#13;
+  padding: 10px;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .table tbody td {&#13;
+  font-size: 13px;&#13;
+  color: #374151;&#13;
+  padding: 10px;&#13;
+  vertical-align: middle;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .table tbody tr {&#13;
+  transition: background 0.15s ease;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .table tbody tr:hover {&#13;
+  background: #f3f4f6;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   ACTIVE ROW — green highlight&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .active-row {&#13;
+  background: #ecfdf5 !important;&#13;
+  border-left: 4px solid #22c55e;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .active-row td {&#13;
+  color: #14532d;&#13;
+  font-weight: 500;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .active-row:hover {&#13;
+  background: #dcfce7 !important;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   LOCKED BADGE — single tenant read-only&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .tenant-locked-badge {&#13;
+  display: inline-block;&#13;
+  padding: 3px 10px;&#13;
+  font-size: 12px;&#13;
+  font-weight: 600;&#13;
+  color: #065f46;&#13;
+  background: #d1fae5;&#13;
+  border-radius: 12px;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   INLINE SELECT&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget select.form-control {&#13;
+  font-size: 12px;&#13;
+  height: 30px;&#13;
+  padding: 4px 8px;&#13;
+  border-radius: 6px;&#13;
+  border: 1px solid #d1d5db;&#13;
+  max-width: 120px;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget select.form-control:focus {&#13;
+  border-color: #0076ce;&#13;
+  box-shadow: 0 0 0 1px #0076ce;&#13;
+  outline: none;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   EMPTY STATE&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .empty-state {&#13;
+  text-align: center;&#13;
+  padding: 30px 20px;&#13;
+  color: #9ca3af;&#13;
+}&#13;
+&#13;
+.hp-tenant-widget .empty-state p {&#13;
+  font-size: 13px;&#13;
+  margin: 0;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   RESPONSIVE&#13;
+   ═══════════════════════════════════════════ */&#13;
+@media (max-width: 600px) {&#13;
+  .hp-tenant-widget .header-flex {&#13;
+    flex-direction: column;&#13;
+    gap: 8px;&#13;
+    align-items: flex-start;&#13;
+  }&#13;
+  .hp-tenant-widget .table thead th,&#13;
+  .hp-tenant-widget .table tbody td {&#13;
+    font-size: 11px;&#13;
+    padding: 6px;&#13;
+  }&#13;
+}&#13;
+/* ═══════════════════════════════════════════&#13;
+   WARNING ROW (AMBER)&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .warning-row {&#13;
+  background: #fffbeb !important;&#13;
+  border-left: 4px solid #f59e0b;&#13;
+}&#13;
+.hp-tenant-widget .warning-row td {&#13;
+  color: #92400e;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-tenant-widget .warning-row:hover {&#13;
+  background: #fef3c7 !important;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-tenant-widget .warning-row.active-row {&#13;
+  background: #fef3c7 !important;&#13;
+  border-left: 4px solid #f59e0b;&#13;
+}&#13;
+&#13;
+&#13;
+/* ═══════════════════════════════════════════&#13;
+   WARNING ICON&#13;
+   ═══════════════════════════════════════════ */&#13;
+.hp-tenant-widget .warning-icon {&#13;
+  margin-right: 4px;&#13;
+  font-size: 14px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The tenant management widget. Displays all configured tenants in a table with active/inactive status. For a single tenant, active is auto-locked to true. For multiple tenants, admins can toggle the active status via dropdowns and bulk-save changes. Includes Refresh Tenants and Save buttons in the header.</description>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>hp-wxp-alert-management-tenant-config</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP AM Tenant Config</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function() {
+    var TENANT_TABLE = 'x_hpws_wrkfrcexpam_tenant_list';
+    var LOG = 'HP WXP AM: ';
+    var action = input && input.action;
+
+    // ═══════════════════════════════════════════
+    // SAVE ALL
+    // ═══════════════════════════════════════════
+    if (action === 'saveAll') {
+        data.saveResult = {
+            success: false,
+            warnings: []
+        };
+        var items = input.tenants || [];
+        var allOk = true;
+
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item && item.sys_id) {
+                var tenantGr = new GlideRecordSecure(TENANT_TABLE);
+                if (tenantGr.get(item.sys_id)) {
+
+                    // Warn if activating a flagged tenant
+                    if (item.active === 'true' &&
+                        tenantGr.getValue('show_warning') == '1') {
+                        data.saveResult.warnings.push(tenantGr.getValue('tenant'));
+                    }
+
+                    tenantGr.setValue('active', item.active === 'true');
+                    tenantGr.update();
+                } else {
+                    allOk = false;
+                }
+            }
+        }
+
+        data.saveResult.success = allOk;
+        return;
+    }
+
+    // ═══════════════════════════════════════════
+    // REFRESH TENANTS
+    // ═══════════════════════════════════════════
+    if (action === 'refreshTenants') {
+        data.refreshResult = {
+            success: false,
+            message: ''
+        };
+
+        try {
+            var apiKey   = gs.getProperty('x_hpws_wrkfrcexpam.api.fastn.api.key');
+            var baseUrl  = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+            var tenantId = gs.getProperty('x_hpws_wrkfrcexpam.tenants');
+            var spaceId  = gs.getProperty('x_hpws_wrkfrcexpam.fastn.space.id');
+
+            if (!apiKey || !baseUrl || !tenantId || !spaceId) {
+                data.refreshResult.message = 'Alert Management is not fully configured.';
+                gs.warn(LOG + 'Refresh aborted - fastn properties missing.');
+                return;
+            }
+
+            var endpoint = baseUrl + '/api/v1/getTenantsChildren';
+
+            var r = new sn_ws.RESTMessageV2();
+            r.setEndpoint(endpoint);
+            r.setHttpMethod('POST');
+
+            r.setRequestHeader('Content-Type', 'application/json');
+            r.setRequestHeader('fastn-space-id', spaceId);
+            r.setRequestHeader('stage', 'LIVE');
+            r.setRequestHeader('x-fastn-api-key', apiKey);
+            r.setRequestHeader('x-fastn-space-tenantid', tenantId);
+
+            r.setRequestBody(JSON.stringify({
+                input: {}
+            }));
+
+            var response = r.execute();
+            var status   = response.getStatusCode();
+            var body     = response.getBody();   
+
+
+            if (status < 200 || status >= 300) {
+                data.refreshResult.message = 'WEX API returned HTTP ' + status + '.';
+                gs.error(LOG + 'Refresh failed - HTTP ' + status);
+                return;
+            }
+
+            var record = JSON.parse(body);
+
+            if (record.tenantType != 'PARTNER' && record.tenantType != 'CUSTOMER') {
+                data.refreshResult.message = 'Unexpected tenantType: ' + record.tenantType;
+                gs.error(LOG + 'Unexpected tenantType: ' + record.tenantType);
+                return;
+            }
+
+            var apiTenants   = record.tenants || [];
+            var apiTenantIds = [];
+            var processed    = 0;
+
+            for (var j = 0; j < apiTenants.length; j++) {
+                var t = apiTenants[j];
+                if (!t || !t.tenantId)
+                    continue;
+
+                // For a PARTNER the partner's own tenant is not a selectable child.
+                // For a CUSTOMER the API returns the tenant itself - keep it.
+                if (record.tenantType == 'PARTNER' && tenantId == t.tenantId)
+                    continue;
+
+                apiTenantIds.push(t.tenantId);
+
+                var grT = new GlideRecordSecure(TENANT_TABLE);
+                grT.addQuery('tenantid', t.tenantId);
+                grT.query();
+                if (grT.next()) {
+                    grT.setValue('tenant', t.name);
+                    grT.setValue('show_warning', false);
+                    grT.update();
+                } else {
+                    grT.initialize();
+                    grT.setValue('tenant', t.name);
+                    grT.setValue('tenantid', t.tenantId);
+                    grT.setValue('active', false);
+                    grT.setValue('show_warning', false);
+                    grT.insert();
+                }
+                processed++;
+            }
+
+            // Flag anything the API no longer returns (manual rows + deleted tenants)
+            if (apiTenantIds.length > 0) {
+                var grStale = new GlideRecordSecure(TENANT_TABLE);
+                grStale.addQuery('tenantid', 'NOT IN', apiTenantIds.join(','));
+                grStale.query();
+                while (grStale.next()) {
+                    grStale.setValue('active', false);
+                    grStale.setValue('show_warning', true);
+                    grStale.update();
+                    gs.info(LOG + 'Deactivated tenant not in API: ' +
+                            grStale.getValue('tenant') + ' (' + grStale.getValue('tenantid') + ')');
+                }
+            }
+
+            gs.info(LOG + 'Tenant refresh complete (' + record.tenantType +
+                    '). Processed ' + processed + ' of ' + apiTenants.length + ' tenants.');
+
+            data.refreshResult.success = true;
+            data.refreshResult.message = 'Processed ' + processed + ' tenant(s).';
+
+        } catch (e) {
+            data.refreshResult.message = e.message;
+            gs.error(LOG + 'Refresh error: ' + e);
+            return;
+        }
+
+        // fall through to LOAD TENANTS so the client gets the fresh list immediately
+    }
+
+    // ═══════════════════════════════════════════
+    // LOAD TENANTS
+    // ═══════════════════════════════════════════
+    if (action === 'getTenants' || action === 'refreshTenants' || !action) {
+        data.tenants = [];
+
+        var tenantlist = new GlideRecordSecure(TENANT_TABLE);
+        tenantlist.orderBy('tenant');
+        tenantlist.query();
+
+        var allTenants = [];
+        while (tenantlist.next()) {
+            allTenants.push({
+                sys_id: tenantlist.getUniqueValue(),
+                tenant: tenantlist.getValue('tenant') || '',
+                tenantid: tenantlist.getValue('tenantid') || '',
+                active: tenantlist.getValue('active') == '1' ? 'true' : 'false',
+                show_warning: tenantlist.getValue('show_warning')
+            });
+        }
+
+        // Single tenant: force active to true if false (only for non-warning records)
+        if (allTenants.length === 1 && allTenants[0].active !== 'true' &&
+            allTenants[0].show_warning != '1') {
+            var fix = new GlideRecordSecure(TENANT_TABLE);
+            if (fix.get(allTenants[0].sys_id)) {
+                fix.setValue('active', true);
+                fix.update();
+            }
+            allTenants[0].active = 'true';
+        }
+
+        data.tenants = allTenants;
+    }
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-21 08:22:01</sys_created_on>
+        <sys_id>7772e89e2b728350eb1cfbfdf291bfa3</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>HP WXP AM Tenant Config</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_7772e89e2b728350eb1cfbfdf291bfa3</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 11:14:18</sys_updated_on>
+        <template><![CDATA[<!-- ✅ STACKED GLOBAL TOAST (TOP RIGHT) -->
+<div class="toast-container">
+  <div class="tenant-toast-global"
+       ng-repeat="toast in c.toasts track by $index"
+       ng-class="{'toast-error': toast.type === 'error'}">
+    <span class="toast-text">{{toast.message}}</span>
+    <span class="toast-close" ng-click="c.removeToast($index)">✖</span>
+  </div>
+</div>
+<div class="hp-tenant-widget panel panel-default">
+  <div class="panel-heading header-flex">
+    <div class="title">
+      Tenants List
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm"
+              ng-if="c.tenants.length > 1"
+              ng-click="c.saveAll()">
+        Save
+      </button>
+      <button class="btn btn-primary btn-sm"
+              ng-click="c.refreshTenants()">
+        Refresh Tenants
+      </button>
+    </div>
+  </div>
+
+
+  <div class="panel-body">
+    <p class="mapping-subtitle">View and manage your HP WXP tenants. Set which tenants are active for alert synchronization.</p>
+
+
+    <!-- Tenant Table -->
+    <table class="table table-bordered table-sm" ng-if="c.tenants.length > 0">
+      <thead>
+        <tr>
+          <th>Tenant</th>
+          <th>Tenant ID</th>
+          <th>Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="t in c.tenants track by t.sys_id"
+            ng-class="{
+                      'active-row': t.active == 'true',
+                      'warning-row': t.warning_visible
+                      }">
+
+
+          <td>
+            <span ng-if="t.warning_visible"
+                  class="warning-icon"
+                  title="This tenant was not found in the latest WEX API response">⚠️</span>
+            {{t.tenant || '--'}}
+          </td>
+          <td>{{t.tenantid || '--'}}</td>
+
+
+          <!-- Active: locked if single valid tenant, dropdown otherwise -->
+          <td>
+            <span ng-if="c.tenants.length === 1 && !t.show_warning"
+                  class="tenant-locked-badge">true</span>
+            <select ng-if="!(c.tenants.length === 1 && !t.show_warning)"
+                    ng-model="t.active"
+                    ng-change="c.onActiveChange(t)"
+                    class="form-control input-sm">
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </td>
+
+
+        </tr>
+      </tbody>
+    </table>
+
+
+    <!-- Empty State -->
+    <div class="empty-state" ng-if="c.tenants.length === 0">
+      <p>No tenant records found.</p>
+    </div>
+
+
+  </div>
+
+
+</div>]]></template>
+    </sp_widget>
+</record_update>

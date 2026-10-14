@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.WrkfrcExpAMAlertUtils</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Utility for Alert Management</description>
+        <mobile_callable>false</mobile_callable>
+        <name>WrkfrcExpAMAlertUtils</name>
+        <sandbox_callable>true</sandbox_callable>
+        <script><![CDATA[var WrkfrcExpAMAlertUtils = Class.create();
+WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+    getIdentifier: function() {
+        return gs.getProperty('x_hpws_wrkfrcexpam.identifier');
+    },
+
+    isSingleRecord: function() {
+
+        var ga = new GlideAggregate('x_hpws_wrkfrcexpam_tenant_list');
+        ga.addAggregate('COUNT');
+        ga.query();
+
+        if (ga.next()) {
+            return ga.getAggregate('COUNT') == 1; //returns true  if count is 1 else false
+        }
+
+        return false;
+    },
+
+    getBaseURL: function() {
+        var instance_name = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+        return instance_name;
+    },
+
+    callAPI: function(restMessageName, params) {
+        try {
+            var baseURL = this.getBaseURL();
+            if (!baseURL) {
+                throw "Base URL Not found.";
+            }
+
+            // x-fastn-space-tenantid is the connection/context tenant (set by Fastn at
+            // setup) and is REQUIRED. The SELECTED tenants travel in the request body (tenantIds),
+            // built from the active rows of x_hpws_wrkfrcexpam_tenant_list by the callers.
+            var tenants = gs.getProperty("x_hpws_wrkfrcexpam.tenants");
+            if (!tenants || tenants.trim() === '') {
+                gs.warn("HP WXP Alert Management: Not configured - the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Complete the Setup.");
+                return {
+                    "success": false,
+                    "statusCode": 0,
+                    "responseBody": "Connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Integration cannot proceed."
+                };
+            }
+            var r = new sn_ws.RESTMessageV2('HP WXP Alert Management', restMessageName);
+            r.setRequestHeader("Content-Type", "application/json");
+            r.setRequestHeader("x-fastn-space-id", gs.getProperty("x_hpws_wrkfrcexpam.fastn.space.id"));
+            r.setRequestHeader("stage", "LIVE");
+            r.setRequestHeader("x-fastn-api-key", gs.getProperty("x_hpws_wrkfrcexpam.api.fastn.api.key"));
+            r.setRequestHeader("x-fastn-space-tenantid", tenants);
+            r.setStringParameterNoEscape('base_url', baseURL);
+            for (var param in params) {
+                r.setStringParameterNoEscape(param, params[param]);
+            }
+
+            var responseBody = '';
+            var httpStatus = '';
+            for (var i = 0; i < 3; i++) {
+                var response = r.executeAsync();
+                response.waitForResponse(60);
+                responseBody = response.getBody();
+                httpStatus = response.getStatusCode();
+                if (httpStatus > 199 && httpStatus < 300)
+                    break;
+            }
+            if (httpStatus > 199 && httpStatus < 300) {
+                return {
+                    "success": true,
+                    "statusCode": httpStatus,
+                    "responseBody": responseBody
+                };
+
+            } else {
+                // A 404 or other 4xx means Fastn does not know the alert. That is a data case, not a communication failure.
+                var statusNum = parseInt(httpStatus, 10);
+                var isCommunicationFailure = !statusNum || statusNum === 401 || statusNum === 403 || statusNum >= 500;
+                if (isCommunicationFailure) {
+                    gs.error("HP WXP Alert Management integration failure - restMessage: " + restMessageName + ", httpStatus: " + httpStatus + ", responseBody: " + responseBody);
+                    var rec = gs.getProperty("x_hpws_wrkfrcexpam.notify_failure_group");
+                    gs.eventQueue("x_hpws_wrkfrcexpam.hp.failure.notify", (typeof current !== 'undefined') ? current : null, rec, responseBody + "||" + httpStatus);
+                } else {
+                    gs.warn("HP WXP Alert Management request rejected by Fastn - restMessage: " + restMessageName + ", httpStatus: " + httpStatus + ", responseBody: " + responseBody);
+                }
+                throw {
+                    "success": false,
+                    "statusCode": httpStatus,
+                    "responseBody": responseBody
+                };
+            }
+        } catch (error) {
+            if (typeof error === "object" && error !== null) {
+                gs.info("HP WXP Alert Management REST Error - Success: " + error.success + ", Status Code: " + error.statusCode + ", Response Body: " + error.responseBody);
+                return error;
+            } else {
+                gs.info("HP WXP Alert Management REST Error - " + error);
+                return error;
+            }
+        }
+    },
+
+    _getAlertDetails: function(incidentGR) {
+
+        var result = {
+            tenantId: null,
+            alertRuleId: null,
+            fleetAlertId: null,
+            deviceAlertId: null
+        };
+
+        var logGR = new GlideRecordSecure('x_hpws_wrkfrcexpam_incoming_alert_log');
+        logGR.addQuery('alert_data', 'CONTAINS', incidentGR.correlation_id + '');
+        logGR.orderByDesc('sys_created_on');
+        logGR.setLimit(1);
+        logGR.query();
+
+        if (logGR.next()) {
+            try {
+                var data = JSON.parse(logGR.getValue('alert_data'));
+
+                result.tenantId = data.tenantId || null;
+                result.alertRuleId = data.alertRuleId || null;
+                result.fleetAlertId = data.fleetAlertId || null;
+                result.deviceAlertId = data.deviceAlertId || null;
+            } catch (e) {
+                gs.error('HP WXP Callback - Failed to parse incoming alert log: ' + e);
+            }
+        }
+
+        return result;
+    },
+
+    buildITSMCallbackPayload: function(incidentGR, eventType) {
+
+        var alertDetails = this._getAlertDetails(incidentGR);
+
+        return {
+            input: {
+                result: {
+                    eventType: eventType,
+                    schemaVersion: "1.0",
+                    tenantId: alertDetails.tenantId,
+                    alertRuleId: alertDetails.alertRuleId,
+                    fleetAlertId: alertDetails.fleetAlertId,
+                    deviceAlertId: alertDetails.deviceAlertId,
+                    itsmType: "SERVICENOW",
+                    incidentId: incidentGR.getUniqueValue(),
+                    displayId: incidentGR.number + '',
+                    newState: incidentGR.state.getDisplayValue(),
+                    assignedTo: incidentGR.assigned_to.nil() ? null : incidentGR.assigned_to.toString(),
+                    resolvedAt: incidentGR.resolved_at.nil() ? null : incidentGR.resolved_at.getDisplayValue(),
+                    priority: incidentGR.priority.getDisplayValue(),
+                    comments: null,
+                    processedAt: new GlideDateTime().getValue().replace(' ', 'T') + 'Z',
+                    error: null
+                }
+            }
+        };
+    },
+
+    sendITSMCallback: function(incidentGR, eventType) {
+
+        var payload = this.buildITSMCallbackPayload(incidentGR, eventType);
+
+        gs.info("HP WXP Callback : " + eventType + " : " + incidentGR.number);
+        gs.info("HP WXP Callback Payload : " + JSON.stringify(payload));
+
+        return this.callAPI('ITSM Callback', {
+            payload: JSON.stringify(payload)
+        });
+    },
+
+    type: 'WrkfrcExpAMAlertUtils'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-19 13:41:18</sys_created_on>
+        <sys_id>e79553a92b3acb10eb1cfbfdf291bf0f</sys_id>
+        <sys_mod_count>25</sys_mod_count>
+        <sys_name>WrkfrcExpAMAlertUtils</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_e79553a92b3acb10eb1cfbfdf291bf0f</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 08:29:45</sys_updated_on>
+    </sys_script_include>
+</record_update>

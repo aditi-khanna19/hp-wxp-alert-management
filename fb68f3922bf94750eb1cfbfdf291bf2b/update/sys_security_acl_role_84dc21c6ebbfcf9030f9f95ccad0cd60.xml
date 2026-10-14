@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-10-09 12:11:21</sys_created_on>
+        <sys_id>84dc21c6ebbfcf9030f9f95ccad0cd60</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>.x_hpws_wrkfrcexpam.tenant_list_user</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_security_acl display_value="WrkfrcExpAMAlertUtils">4bcced86ebbfcf9030f9f95ccad0cdbb</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_84dc21c6ebbfcf9030f9f95ccad0cd60</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 12:19:46</sys_updated_on>
+        <sys_user_role display_value="x_hpws_wrkfrcexpam.tenant_list_user" name="x_hpws_wrkfrcexpam.tenant_list_user">4570abe92bbacb10eb1cfbfdf291bf67</sys_user_role>
+    </sys_security_acl_role>
+</record_update>

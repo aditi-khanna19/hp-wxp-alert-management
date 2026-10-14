@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>HP WXP Alert Management API Key</description>
+        <ignore_cache>true</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_hpws_wrkfrcexpam.api.fastn.api.key</name>
+        <read_roles>x_hpws_wrkfrcexpam.admin</read_roles>
+        <suffix>api.fastn.api.key</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-07-03 07:05:30</sys_created_on>
+        <sys_id>75ea7f5e2bf94750eb1cfbfdf291bf45</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>x_hpws_wrkfrcexpam.api.fastn.api.key</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_properties_75ea7f5e2bf94750eb1cfbfdf291bf45</sys_update_name>
+        <sys_updated_by>jonah.bui</sys_updated_by>
+        <sys_updated_on>2026-10-12 14:34:15</sys_updated_on>
+        <type>password</type>
+        <value>{{dflt-gpaes}}Y8jPf3a4+Rj2JJbW5Ivhj4+c8BQvqg23tsLQeO2VANAQLjE/DZbWaSnIicuBzJlw</value>
+        <write_roles>x_hpws_wrkfrcexpam.admin</write_roles>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=75ea7f5e2bf94750eb1cfbfdf291bf45"/>
+</record_update>

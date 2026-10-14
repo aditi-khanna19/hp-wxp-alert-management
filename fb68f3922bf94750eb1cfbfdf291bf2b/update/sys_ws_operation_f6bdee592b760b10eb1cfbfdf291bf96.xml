@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>c9314a61eb8f871030f9f95ccad0cd31</enforce_acl>
+        <http_method>GET</http_method>
+        <name>Get lookups</name>
+        <operation_script><![CDATA[(function process(request, response) {
+
+    // Authorisation. 'Requires ACL authorization' plus the rest_endpoint ACL is the primary
+    // control; this guard is deliberate belt-and-braces, because an ACL can be deactivated
+    // on a customer instance and the endpoint would silently reopen. Confirmed 31 Aug 2026
+    // that without it any authenticated user could read every group and category.
+    //
+    // The response deliberately says nothing about WHICH role is missing - naming it tells a
+    // caller exactly what to go after. The detail goes to the system log instead, where
+    // support can find it and an outsider cannot.
+    if (!gs.hasRole('x_hpws_wrkfrcexpam.user')) {
+        gs.warn('[HP WXP AM] Forbidden GET /lookups - user ' + gs.getUserName() +
+                ' does not hold x_hpws_wrkfrcexpam.user');
+        var denied = new sn_ws_err.ServiceError();
+        denied.setStatus(403);
+        denied.setMessage('Forbidden.');
+        return denied;
+    }
+
+    var lookups = new AlertConfigLookups();
+    var etag = lookups.getETag();
+
+    response.setHeader('ETag', etag);
+    response.setHeader('Cache-Control', 'private, max-age=300');
+    response.setHeader('Vary', 'Accept-Encoding');
+
+    // The caller always sends If-None-Match, so one request covers both bootstrap and
+    // steady state: unchanged data costs a 304 with no body. An empty or absent header
+    // cannot match, so a first call falls through to 200 without the caller needing a
+    // special case. RFC 7232 permits a comma-separated list of validators and some
+    // clients and proxies strip the weak prefix, so compare tolerantly rather than by
+    // exact string equality - otherwise caching silently never engages.
+    if (matchesEtag(request.getHeader('If-None-Match'), etag)) {
+        response.setStatus(304);
+        return;
+    }
+
+    return lookups.getLookups();
+
+    function matchesEtag(header, current) {
+        if (!header)
+            return false;
+        var wanted = normalise(current);
+        var candidates = ('' + header).split(',');
+        for (var i = 0; i < candidates.length; i++) {
+            if (normalise(candidates[i]) === wanted)
+                return true;
+        }
+        return false;
+    }
+
+    /** Trim, drop a leading W/, drop surrounding quotes. '*' is deliberately not honoured. */
+    function normalise(value) {
+        return ('' + value).trim().replace(/^W\//i, '').replace(/^"/, '').replace(/"$/, '');
+    }
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/x_hpws_wrkfrcexpam/lookups</operation_uri>
+        <produces>application/json</produces>
+        <produces_customized>true</produces_customized>
+        <relative_path>/</relative_path>
+        <request_example/>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description>Assignment groups, categories and subcategories for the alert-configuration page</short_description>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:56:25</sys_created_on>
+        <sys_id>f6bdee592b760b10eb1cfbfdf291bf96</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Get lookups</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_ws_operation_f6bdee592b760b10eb1cfbfdf291bf96</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 13:00:32</sys_updated_on>
+        <web_service_definition display_value="HP WXP Alert Lookups">439daa592b760b10eb1cfbfdf291bf81</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

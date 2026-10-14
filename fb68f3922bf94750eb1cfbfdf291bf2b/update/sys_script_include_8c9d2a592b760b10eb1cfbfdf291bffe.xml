@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.AlertConfigLookups</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Builds the assignment group / category / subcategory lists the WXP alert-configuration page needs to populate its three dependent dropdowns, plus the ETag that lets the caller skip the payload when nothing has changed. Backs the GET /lookups resource of the snow_alert_config Scripted REST API.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>AlertConfigLookups</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var AlertConfigLookups = Class.create();
+AlertConfigLookups.prototype = {
+
+    GROUP_QUERY:       'active=true',
+    CATEGORY_QUERY:    'name=incident^element=category^inactive=false^language=en',
+    SUBCATEGORY_QUERY: 'name=incident^element=subcategory^inactive=false^language=en',
+
+    /**
+     * Both choice lists in one query, for the ETag. '^OR' binds only to the condition
+     * immediately before it, so 'element=category^...^ORelement=subcategory' silently
+     * matched nothing on the subcategory side and subcategory edits never invalidated
+     * the cache. 'elementIN' covers both.
+     */
+    CHOICE_QUERY:      'name=incident^inactive=false^language=en^elementINcategory,subcategory',
+
+    initialize: function () {},
+
+    /**
+     * Everything the alert-configuration page needs, in one response. No cap - the caller
+     * receives the full lists and filters client-side.
+     */
+    getLookups: function () {
+        return {
+            assignmentGroups: this._assignmentGroups(),
+            categories: this._choices(this.CATEGORY_QUERY),
+            subcategoriesByCategory: this._subcategoriesByCategory()
+        };
+    },
+
+    /**
+     * Weak validator over everything that can change the payload: edits to groups, groups
+     * appearing or disappearing, edits to the choice lists, and choices appearing or
+     * disappearing. Timestamps are compressed because a quoted header value is easier to
+     * handle without spaces and colons in it.
+     */
+    getETag: function () {
+        var parts = [
+            'lookups',
+            this._compress(this._maxUpdated('sys_user_group', this.GROUP_QUERY)),
+            this._count('sys_user_group', this.GROUP_QUERY),
+            this._compress(this._maxUpdated('sys_choice', this.CHOICE_QUERY)),
+            this._count('sys_choice', this.CHOICE_QUERY)
+        ];
+        return 'W/"' + parts.join('-') + '"';
+    },
+
+    _assignmentGroups: function () {
+        var groups = [];
+        var group = new GlideRecordSecure('sys_user_group');
+        group.addEncodedQuery(this.GROUP_QUERY);
+        group.orderBy('name');
+        group.query();
+        while (group.next()) {
+            groups.push({
+                id: group.getUniqueValue(),
+                name: group.getValue('name')
+            });
+        }
+        return groups;
+    },
+
+    _choices: function (encodedQuery) {
+        var choices = [];
+        var choice = new GlideRecordSecure('sys_choice');
+        choice.addEncodedQuery(encodedQuery);
+        choice.orderBy('label');
+        choice.query();
+        while (choice.next()) {
+            choices.push({
+                value: choice.getValue('value'),
+                label: choice.getValue('label')
+            });
+        }
+        return choices;
+    },
+
+    /** Subcategories keyed by the category they hang off, so the caller can chain the dropdowns. */
+    _subcategoriesByCategory: function () {
+        var byCategory = {};
+        var choice = new GlideRecordSecure('sys_choice');
+        choice.addEncodedQuery(this.SUBCATEGORY_QUERY);
+        choice.orderBy('label');
+        choice.query();
+        while (choice.next()) {
+            var parent = choice.getValue('dependent_value');
+            if (!parent)
+                continue;
+            if (!byCategory[parent])
+                byCategory[parent] = [];
+            byCategory[parent].push({
+                value: choice.getValue('value'),
+                label: choice.getValue('label')
+            });
+        }
+        return byCategory;
+    },
+
+    /**
+     * GlideRecordSecure rather than GlideAggregate: GlideAggregate.MAX('sys_updated_on') returns
+     * stale data on this field. Per WEXFER-525 and endpoint plan section 6.8.
+     */
+    _maxUpdated: function (table, encodedQuery) {
+        var gr = new GlideRecordSecure(table);
+        gr.addEncodedQuery(encodedQuery);
+        gr.orderByDesc('sys_updated_on');
+        gr.setLimit(1);
+        gr.query();
+        return gr.next() ? (gr.getValue('sys_updated_on') || '') : '';
+    },
+
+    _count: function (table, encodedQuery) {
+        var agg = new GlideAggregate(table);
+        agg.addEncodedQuery(encodedQuery);
+        agg.addAggregate('COUNT');
+        agg.query();
+        return agg.next() ? ('' + agg.getAggregate('COUNT')) : '0';
+    },
+
+    _compress: function (value) {
+        return ('' + value).replace(/[^0-9A-Za-z]/g, '');
+    },
+
+    type: 'AlertConfigLookups'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:55:41</sys_created_on>
+        <sys_id>8c9d2a592b760b10eb1cfbfdf291bffe</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>AlertConfigLookups</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_8c9d2a592b760b10eb1cfbfdf291bffe</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 14:00:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

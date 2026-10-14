@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties_category">
+    <sys_properties_category action="INSERT_OR_UPDATE">
+        <name>HP WXP AM Application Settings</name>
+        <sys_class_name>sys_properties_category</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-25 14:18:54</sys_created_on>
+        <sys_id>c94a9aa32b3e0b10eb1cfbfdf291bfd8</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>HP WXP AM Application Settings</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_properties_category_c94a9aa32b3e0b10eb1cfbfdf291bfd8</sys_update_name>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-08-25 14:27:00</sys_updated_on>
+        <title><![CDATA[<p>HP Workforce Experience Platform Alert Management Settings </p>]]></title>
+    </sys_properties_category>
+    <sys_translated_text action="delete_multiple" query="documentkey=c94a9aa32b3e0b10eb1cfbfdf291bfd8"/>
+</record_update>
