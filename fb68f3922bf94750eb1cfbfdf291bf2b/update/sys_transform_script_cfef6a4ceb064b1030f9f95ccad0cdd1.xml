@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_transform_script">
+    <sys_transform_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <map display_value="HP WXP Alert to Incident">ccf5939f2b750710eb1cfbfdf291bf79</map>
+        <order>100</order>
+        <script><![CDATA[(function runTransformScript(source, map, log, target) {
+
+    // Every column the field maps parse must be valid JSON. If one is not, fail the row
+    // here rather than let a field map throw halfway through the transform.
+    var company, device, user;
+    try {
+        company = JSON.parse(source.u_companydetails || '{}');
+        device = JSON.parse(source.u_devicedetails || '{}');
+        user = JSON.parse(source.u_userdetails || '{}');
+    } catch (e) {
+        source.sys_import_state = 'error';
+        source.sys_import_state_comment = e.message;
+        log.error('Alert Transform Failed: ' + e.message);
+        ignore = true;
+        return;
+    }
+
+    // The alert lifecycle drives the incident lifecycle. A re-post coalesces onto the same
+    // incident (u_id -> correlation_id), so a later FIXED or DISMISSED closes the incident
+    // the first NEW opened instead of leaving it hanging.
+    var status = nameOf(source.u_status);
+
+    if (status === 'FIXED') {
+        target.state = 6;                                  // Resolved
+        target.close_code = 'Solution provided';
+        target.close_notes = 'Resolved automatically: HP WXP reported this alert as fixed.';
+    } else if (status === 'DISMISSED') {
+        target.state = 8;                                  // Canceled
+        target.close_notes = 'Cancelled automatically: HP WXP reported this alert as dismissed.';
+    } else if (status === 'NEW' && target.isNewRecord()) {
+        // Only on insert. A re-posted NEW must not drag an incident someone is already
+        // working back to New.
+        target.state = 1;
+    }
+
+    var caller = findCaller(user);
+    if (caller)
+        target.caller_id = caller;
+
+    /** u_status arrives as a stringified {"name":"NEW","value":"New"}; a bare "NEW" also works. */
+    function nameOf(field) {
+        var raw = ('' + (field || '')).trim();
+        if (!raw)
+            return '';
+        try {
+            var parsed = JSON.parse(raw);
+            return ('' + (parsed.name || parsed.value || '')).toUpperCase();
+        } catch (e) {
+            return raw.toUpperCase();
+        }
+    }
+
+    /** Match the alert's user to a ServiceNow user by email, then by user name. */
+    function findCaller(details) {
+        var attempts = [
+            { field: 'email', value: details.emailId },
+            { field: 'user_name', value: details.userName },
+            { field: 'name', value: details.userName }
+        ];
+        for (var i = 0; i < attempts.length; i++) {
+            if (!attempts[i].value)
+                continue;
+            var candidate = new GlideRecord('sys_user');
+            candidate.addQuery(attempts[i].field, attempts[i].value);
+            candidate.addQuery('active', true);
+            candidate.setLimit(1);
+            candidate.query();
+            if (candidate.next())
+                return candidate.getUniqueValue();
+        }
+        return '';
+    }
+
+})(source, map, log, target);]]></script>
+        <sys_class_name>sys_transform_script</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-07-08 12:06:54</sys_created_on>
+        <sys_id>cfef6a4ceb064b1030f9f95ccad0cdd1</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>onBefore</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_transform_script_cfef6a4ceb064b1030f9f95ccad0cdd1</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-08-18 16:54:44</sys_updated_on>
+        <when>onBefore</when>
+    </sys_transform_script>
+</record_update>

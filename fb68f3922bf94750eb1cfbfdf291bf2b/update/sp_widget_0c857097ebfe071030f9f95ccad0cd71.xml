@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($timeout) {
+
+    var c = this;
+
+    c.properties = [];
+    c.selectedTenants = [];
+
+    c.$onInit = function() {
+
+        c.server.get({
+            action: "loadProperties"
+        }).then(function(response) {
+
+            c.properties = response.data.properties || [];
+            c.selectedTenants = response.data.selectedTenants || [];
+
+        });
+
+    };
+
+    c.openProperty = function(sysId) {
+
+        var url = "/now/nav/ui/classic/params/target/system_properties_ui.do%3Fsysparm_title%3DSettings%26sysparm_category%3DHP%2520WXP%2520AM%2520Application%2520Settings%26sysparm_domain_restore%3Dfalse%26sysparm_stack%3Dno";
+
+        top.location.href = url;
+    };
+
+    c.saveProperties = function() {
+
+        c.server.get({
+            action: "saveProperties",
+            properties: c.properties
+        }).then(function() {
+
+            c.showSuccess = true;
+
+            $timeout(function() {
+                c.showSuccess = false;
+            }, 5000);
+
+        });
+
+    };
+
+};]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.section {&#13;
+  display: none;&#13;
+}&#13;
+&#13;
+.am-card {&#13;
+  position: relative;&#13;
+  background: #ffffff;&#13;
+  border: 2px solid #e5e7eb !important;&#13;
+  border-radius: 10px;&#13;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);&#13;
+  margin-bottom: 20px;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.am-card-header {&#13;
+  display: flex;&#13;
+  justify-content: space-between;&#13;
+  align-items: center;&#13;
+  padding: 10px 14px;&#13;
+  font-size: 16px;&#13;
+  font-weight: 600;&#13;
+  color: #111827;&#13;
+  background: #f9fafb;&#13;
+  border-bottom: 1px solid #e5e7eb;&#13;
+}&#13;
+&#13;
+&#13;
+.am-header-text {&#13;
+  flex: 1;&#13;
+}&#13;
+&#13;
+&#13;
+.am-header-actions {&#13;
+  display: flex;&#13;
+  gap: 8px;&#13;
+  margin-left: 16px;&#13;
+}&#13;
+&#13;
+&#13;
+.am-subtitle {&#13;
+  color: #64748b;&#13;
+  font-size: 13px;&#13;
+  margin: 0 0 16px 0;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.am-card-body {&#13;
+  padding: 20px;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.am-field label {&#13;
+  display: block;&#13;
+  font-size: 13px;&#13;
+  color: #6b7280;&#13;
+  margin-bottom: 6px;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.form-control[readonly] {&#13;
+  background: #f3f4f6;&#13;
+  cursor: not-allowed;&#13;
+  color: #4b5563;&#13;
+}&#13;
+&#13;
+&#13;
+.am-link-btn {&#13;
+  padding-left: 0;&#13;
+  margin-top: 6px;&#13;
+  font-size: 12px;&#13;
+}&#13;
+&#13;
+.am-card {&#13;
+    position: relative;&#13;
+}&#13;
+&#13;
+.am-toast {&#13;
+    position: absolute;&#13;
+    top: 15px;&#13;
+    left: 50%;&#13;
+    transform: translateX(-50%);&#13;
+    z-index: 1000;&#13;
+&#13;
+    background: #E7F6EC;&#13;
+  	border: 1px solid #9FE0B5;&#13;
+    color: #006B50;&#13;
+    padding: 12px 20px;&#13;
+    border-radius: 6px;&#13;
+    font-weight: 600;&#13;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The setup connection widget allows admins to select a ServiceNow the property values.</description>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>hp-wxp-am-setup-connection</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP AM Setup Connection</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function() {
+
+    var action = input && input.action;
+
+    // The only settings this screen may read or write.
+    var propertyNames = [
+        "x_hpws_wrkfrcexpam.api.fastn.api.key",
+        "x_hpws_wrkfrcexpam.fastn.space.id",
+        "x_hpws_wrkfrcexpam.fastn_api_baseurl",
+        "x_hpws_wrkfrcexpam.tenants",
+        "x_hpws_wrkfrcexpam.tenant.type"
+    ];
+
+    if (action == "loadProperties") {
+
+        data.properties = [];
+
+        propertyNames.forEach(function(propName) {
+
+            var propertyGr = new GlideRecordSecure('sys_properties');
+            var description = '';
+            var propSysId = '';
+
+            propertyGr.addQuery('name', propName);
+            propertyGr.setLimit(1);
+            propertyGr.query();
+
+            if (propertyGr.next()) {
+                description = propertyGr.getValue('description') || '';
+                propSysId = propertyGr.getUniqueValue();
+            }
+
+            data.properties.push({
+                name: propName,
+                description: description,
+                sys_id: propSysId,
+                value: gs.getProperty(propName, '')
+            });
+
+        });
+
+        // Selected tenants come straight from the Tenant List (active rows).
+        data.selectedTenants = [];
+
+        var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
+        tenantGr.addQuery('active', true);
+        tenantGr.orderBy('tenant');
+        tenantGr.query();
+
+        while (tenantGr.next()) {
+            data.selectedTenants.push({
+                tenant: tenantGr.getValue('tenant'),
+                tenantid: tenantGr.getValue('tenantid')
+            });
+        }
+    }
+
+    if (action == "saveProperties") {
+
+        (input.properties || []).forEach(function(prop) {
+
+            // Ignore any name that is not one of the setup settings.
+            if (propertyNames.indexOf(prop.name) === -1) return;
+
+            gs.setProperty(prop.name, prop.value || '');
+        });
+
+    }
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-24 12:18:58</sys_created_on>
+        <sys_id>0c857097ebfe071030f9f95ccad0cd71</sys_id>
+        <sys_mod_count>40</sys_mod_count>
+        <sys_name>HP WXP AM Setup Connection</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_0c857097ebfe071030f9f95ccad0cd71</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 11:01:07</sys_updated_on>
+        <template><![CDATA[<!-- Setup Connection -->
+<div class="am-card">
+
+    <div class="am-card-header">
+        <div class="am-header-text">
+            Setup Connection
+        </div>
+
+        <div class="am-header-actions">
+            <button class="btn btn-primary btn-sm"
+                    ng-click="c.saveProperties()">
+                Save
+            </button>
+        </div>
+    </div>
+  
+  	<!-- Success Message -->
+  	<div ng-if="c.showSuccess" class="am-toast">
+      ✅ Saved successfully
+     </div>
+
+    <div class="am-card-body">
+
+        <div class="am-subtitle">
+            Configure the required system property values.
+        </div>
+
+        <div class="row"
+             ng-repeat="prop in c.properties track by $index">
+
+            <!-- Property Name -->
+            <div class="col-sm-6 am-field">
+				
+                <div class="am-property-name">
+                    {{prop.description}}
+                </div><br>
+
+            </div>
+
+            <!-- Property Value -->
+            <div class="col-sm-6 am-field">
+
+                <input type="text"
+                       class="form-control"
+                       ng-model="prop.value">
+
+            </div>
+
+        </div>
+      
+      	<div style="margin-bottom:20px;">
+            <button class="btn btn-link btn-sm am-link-btn"
+                    ng-click="c.openProperty()">
+                Open HP WXP Alert Management System Properties
+            </button>
+        </div>
+
+    </div>
+
+</div>]]></template>
+    </sp_widget>
+</record_update>

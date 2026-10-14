@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_package_dependency_m2m">
+    <sys_package_dependency_m2m action="INSERT_OR_UPDATE">
+        <dependency display_value="Incident" source="com.snc.incident">d6f8e7e9eb90031030f9f95ccad0cd88</dependency>
+        <min_version>1.0.0</min_version>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 16:54:46</sys_created_on>
+        <sys_id>611bfe9d2bf60b10eb1cfbfdf291bf7c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-08-18 16:54:46</sys_updated_on>
+    </sys_package_dependency_m2m>
+</record_update>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_policy_action">
+    <sys_ui_policy_action action="INSERT_OR_UPDATE">
+        <cleared>false</cleared>
+        <disabled>ignore</disabled>
+        <field>tenantid</field>
+        <field_message/>
+        <field_message_type>none</field_message_type>
+        <mandatory>true</mandatory>
+        <sys_class_name>sys_ui_policy_action</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-24 07:10:53</sys_created_on>
+        <sys_id>75eea303ebb2071030f9f95ccad0cd40</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>tenantid</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_ui_policy_action_75eea303ebb2071030f9f95ccad0cd40</sys_update_name>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-08-24 07:10:53</sys_updated_on>
+        <table>x_hpws_wrkfrcexpam_tenant_list</table>
+        <ui_policy display_value="Make Tenant id mandatory">ca8eebcfeb72071030f9f95ccad0cd0c</ui_policy>
+        <value/>
+        <value_action>ignore</value_action>
+        <visible>ignore</visible>
+    </sys_ui_policy_action>
+    <sys_translated_text action="delete_multiple" query="documentkey=75eea303ebb2071030f9f95ccad0cd40"/>
+</record_update>

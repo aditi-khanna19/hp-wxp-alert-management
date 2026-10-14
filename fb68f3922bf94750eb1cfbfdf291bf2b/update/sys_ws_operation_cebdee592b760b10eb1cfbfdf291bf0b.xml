@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json</consumes>
+        <consumes_customized>true</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>0281c6a1eb8f871030f9f95ccad0cd15</enforce_acl>
+        <http_method>POST</http_method>
+        <name>Post alerts</name>
+        <operation_script><![CDATA[(function process(request, response) {
+
+    // Authorisation. 'Requires ACL authorization' plus the rest_endpoint ACL is the primary
+    // control; this guard is deliberate belt-and-braces, because an ACL can be deactivated
+    // on a customer instance and the endpoint would silently reopen. Confirmed 31 Aug 2026
+    // that without it a role-less authenticated user could create AND resolve incidents -
+    // a re-post coalescing on u_id with status FIXED closes whatever it matches.
+    //
+    // The response deliberately says nothing about WHICH role is missing - naming it tells a
+    // caller exactly what to go after. The detail goes to the system log instead, where
+    // support can find it and an outsider cannot.
+    if (!gs.hasRole('x_hpws_wrkfrcexpam.user')) {
+        gs.warn('[HP WXP AM] Forbidden POST /alerts - user ' + gs.getUserName() +
+                ' does not hold x_hpws_wrkfrcexpam.user');
+        return fail(403, 'Forbidden.');
+    }
+
+    var body;
+    try {
+        body = request.body.data;
+    } catch (e) {
+        return fail(400, 'Body is not valid JSON.');
+    }
+
+    if (!body)
+        return fail(400, 'Send a JSON body containing an "alerts" array.');
+
+    // The envelope is { "alerts": [...] }; a bare array is accepted too.
+    var alerts = Array.isArray(body) ? body : body.alerts;
+
+    var outcome = new AlertIngest().importBatch(alerts);
+    if (!outcome.ok) {
+        var errorBody = { error: outcome.error };
+        if (outcome.missingFields)
+            errorBody.missingFields = outcome.missingFields;
+        if (outcome.alertIndex !== undefined && outcome.alertIndex !== null)
+            errorBody.alertIndex = outcome.alertIndex;
+        response.setStatus(outcome.status);
+        return errorBody;
+    }
+
+    return {
+        import_set: outcome.import_set,
+        import_set_id: outcome.import_set_id,
+        staging_table: outcome.staging_table,
+        batch_size: outcome.batch_size,
+        incidents: outcome.incidents
+    };
+
+    function fail(status, message) {
+        var error = new sn_ws_err.ServiceError();
+        error.setStatus(status);
+        error.setMessage(message);
+        return error;
+    }
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/x_hpws_wrkfrcexpam/alerts</operation_uri>
+        <produces>application/json</produces>
+        <produces_customized>true</produces_customized>
+        <relative_path>/</relative_path>
+        <request_example>{&#13;
+  "alerts": [&#13;
+    {&#13;
+      "eventType": "ALERT_CREATED",&#13;
+      "schemaVersion": "1.0",&#13;
+      "alertRuleId": "wxp-alert-rule-9876",&#13;
+      "fleetAlertId": "22527558",&#13;
+      "deviceAlertId": null,&#13;
+      "itsmType": "SERVICENOW",&#13;
+      "u_title": "Unexpected System crash/reboot",&#13;
+      "u_description": "An unexpected crash or system reboot on device DESKTOP-778U98A. OS: Windows 11.",&#13;
+      "u_type": "{\"name\":\"OS_HEALTH\",\"value\":\"OS Health\"}",&#13;
+      "u_subtype": "{\"name\":\"OS_CRASH\",\"value\":\"OS Unexpected Crash/Reboot\"}",&#13;
+      "u_status": "{\"name\":\"NEW\",\"value\":\"New\"}",&#13;
+      "u_impact": "2",&#13;
+      "u_urgency": "2",&#13;
+      "u_devicedetails": "{\"deviceName\":\"DESKTOP-778U98A\",\"serialNumber\":\"MXL34948XB\"}",&#13;
+      "u_companydetails": "{\"tenantId\":\"4d196eb0-0e87-49e0-866a-26ffd678ae25\",\"companyName\":\"LDK Demo Prime\"}",&#13;
+      "u_assignmentgroupid": "&lt;sys_id from /lookups assignmentGroups&gt;",&#13;
+      "u_category": "hardware",&#13;
+      "u_subcategory": "cpu"&#13;
+    }&#13;
+  ]&#13;
+}</request_example>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description>Accepts a batch of up to 100 alerts and returns one incident per alert.</short_description>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:56:22</sys_created_on>
+        <sys_id>cebdee592b760b10eb1cfbfdf291bf0b</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>Post alerts</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_ws_operation_cebdee592b760b10eb1cfbfdf291bf0b</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 13:00:43</sys_updated_on>
+        <web_service_definition display_value="HP WXP Alerts">d69d6a592b760b10eb1cfbfdf291bf07</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

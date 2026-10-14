@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="f7cf1fe92bbacb10eb1cfbfdf291bf07" label="Tenant List" max_length="40" name="x_hpws_wrkfrcexpam_tenant_list" type="collection">
+        <element label="Tenant" max_length="40" name="tenant" type="string"/>
+        <element label="Active" max_length="40" name="active" type="boolean"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="choice">
+            <choice/>
+        </element>
+        <element label="Show Warning" max_length="40" name="show_warning" type="boolean"/>
+        <element label="TenantId" max_length="40" name="tenantid" type="string"/>
+    </element>
+</database>

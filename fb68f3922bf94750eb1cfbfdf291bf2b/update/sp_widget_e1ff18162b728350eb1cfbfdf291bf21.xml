@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($scope, $timeout, $rootScope) {
+
+    var c = this;
+
+    c.logs = [];
+    c.currentIndex = 0;
+    c.isRunning = false;
+    c.success = false;
+    c.finalMessage = '';
+
+    var STORAGE_KEY = "am_setup_state";
+
+    /* ✅ ACCORDION CONTROL */
+    c.activeIndex = -1;
+
+    c.toggleHelp = function(index) {
+
+        if (c.activeIndex === index) {
+            c.activeIndex = -1;
+            c.logs[index].showHelp = false;
+        } else {
+
+            // close all
+            c.logs.forEach(function(log) {
+                log.showHelp = false;
+            });
+
+            c.activeIndex = index;
+            c.logs[index].showHelp = true;
+        }
+    };
+
+    function loadState() {
+        var saved = sessionStorage.getItem(STORAGE_KEY);
+
+        if (saved) {
+            try {
+                var data = JSON.parse(saved);
+
+                c.logs = data.logs || [];
+                c.success = data.success;
+                c.finalMessage = data.message;
+
+                c.currentIndex = c.logs.length;
+                c.isRunning = false;
+            } catch (e) {}
+        }
+    }
+
+    function saveState() {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+            logs: c.logs,
+            success: c.success,
+            message: c.finalMessage
+        }));
+    }
+
+    function startAnimation() {
+
+        c.currentIndex = 0;
+
+        function step() {
+            if (c.currentIndex < c.logs.length) {
+                c.currentIndex++;
+                $timeout(step, 350);
+            } else {
+                c.isRunning = false;
+                saveState();
+            }
+        }
+
+        step();
+    }
+
+    c.$onInit = function() {
+        loadState();
+    };
+
+    /* RUN SETUP */
+    c.runSetup = function() {
+
+        c.logs = [];
+        c.currentIndex = 0;
+        c.isRunning = true;
+
+        sessionStorage.removeItem(STORAGE_KEY);
+
+        c.server.get({
+            action: 'runFixScript'
+        }).then(function(res) {
+
+            c.logs = res.data.result.logs || [];
+            c.success = res.data.result.success;
+            c.finalMessage = res.data.result.message;
+
+            startAnimation();
+            $rootScope.$broadcast('setup.completed');
+        });
+    };
+
+    /* RESET */
+    c.resetSetup = function() {
+
+        sessionStorage.removeItem("am_setup_state");
+        sessionStorage.removeItem("am_connection_state");
+        sessionStorage.removeItem("am_failure_config");
+
+        sessionStorage.setItem("am_force_reset", "true");
+        sessionStorage.setItem("am_force_tenant_reset", "true");
+
+        c.server.get({
+            action: 'resetSetup'
+        }).then(function() {
+
+            $rootScope.$broadcast('setup.reset');
+            window.location.reload();
+
+        });
+    };
+
+};
+]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.hp-setup-widget {&#13;
+  border: 2px solid #e5e7eb !important;&#13;
+  border-radius: 10px;&#13;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);&#13;
+}&#13;
+.hp-setup-widget .panel-heading {&#13;
+  background: #f9fafb !important;&#13;
+  border-bottom: 1px solid #e5e7eb;&#13;
+  padding: 10px 14px;&#13;
+  border-radius: 10px 10px 0 0;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-setup-widget .header-flex {&#13;
+  display: flex;&#13;
+  justify-content: space-between;&#13;
+  align-items: center;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-setup-widget .title {&#13;
+  font-size: 16px;&#13;
+  font-weight: 600;&#13;
+  color: #1f2937;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-setup-widget .header-actions {&#13;
+  display: flex;&#13;
+  gap: 8px;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-setup-widget .panel-body {&#13;
+  padding: 14px;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.mapping-subtitle {&#13;
+  color: #64748b;&#13;
+  font-size: 13px;&#13;
+  margin: 0 0 16px 0;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.section {&#13;
+  margin-top: 10px;&#13;
+  padding: 0;&#13;
+}&#13;
+&#13;
+&#13;
+.row-item {&#13;
+  margin-bottom: 10px;&#13;
+}&#13;
+&#13;
+&#13;
+.row-line {&#13;
+  display: flex;&#13;
+  align-items: center;&#13;
+  gap: 12px;&#13;
+}&#13;
+&#13;
+&#13;
+.icon { width: 25px; }&#13;
+.name { width: 260px; }&#13;
+.value { flex: 1; }&#13;
+&#13;
+&#13;
+&#13;
+.pass { color: #22c55e; }&#13;
+.fail { color: #ef4444; }&#13;
+&#13;
+&#13;
+&#13;
+.result {&#13;
+  margin-top: 14px;&#13;
+  font-size: 14px;&#13;
+  font-weight: 600;&#13;
+  text-align: center;&#13;
+}&#13;
+&#13;
+&#13;
+.result.pass {&#13;
+  background: #ecfdf5;&#13;
+  border: 1px solid #bbf7d0;&#13;
+  color: #166534;&#13;
+  border-radius: 6px;&#13;
+  padding: 10px;&#13;
+}&#13;
+&#13;
+&#13;
+.result.fail {&#13;
+  background: #fef2f2;&#13;
+  border: 1px solid #fecaca;&#13;
+  color: #991b1b;&#13;
+  border-radius: 6px;&#13;
+  padding: 10px;&#13;
+}&#13;
+&#13;
+&#13;
+.help-hint {&#13;
+  font-size: 12px;&#13;
+  color: #6b7280;&#13;
+  margin-left: 8px;&#13;
+}&#13;
+&#13;
+&#13;
+.help-toggle {&#13;
+  margin-left: auto;&#13;
+  cursor: pointer;&#13;
+  color: #2563eb;&#13;
+}&#13;
+&#13;
+&#13;
+&#13;
+.help-box {&#13;
+  margin-left: 35px;&#13;
+  margin-top: 8px;&#13;
+  overflow: hidden;&#13;
+  max-height: 0;&#13;
+  opacity: 0;&#13;
+  transition: max-height 0.3s ease, opacity 0.25s ease;&#13;
+}&#13;
+&#13;
+&#13;
+.help-box.open {&#13;
+  max-height: 400px;&#13;
+  opacity: 1;&#13;
+  padding: 12px 14px;&#13;
+  border-left: 4px solid #3b82f6;&#13;
+  background: #eff6ff;&#13;
+  border-radius: 6px;&#13;
+}&#13;
+&#13;
+&#13;
+.help-title {&#13;
+  font-weight: 600;&#13;
+  color: #1d4ed8;&#13;
+  margin-bottom: 6px;&#13;
+}&#13;
+&#13;
+&#13;
+.help-content ul,&#13;
+.help-content ol {&#13;
+  padding-left: 18px;&#13;
+  margin: 6px 0;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The initial application setup widget. Allows admins to configure and validate the core API connection settings (API key, base URL, tenant ID).</description>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>hp-wxp-alert-app-setup</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP Alert App Setup</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function() {
+
+    var action = input && input.action;
+
+    if (action === 'runFixScript') {
+
+        var util = new x_hpws_wrkfrcexpam.WrkfrcExpAMCalibrationUtil();
+        var result = util.runFixScript();
+
+        data.result = result;
+    }
+
+    // ✅ RESET
+    if (action === 'resetSetup') {
+
+        var util2 = new x_hpws_wrkfrcexpam.WrkfrcExpAMCalibrationUtil();
+        var res = util2.resetSetup();
+        data.reset = res;
+    }
+
+})();
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-21 08:10:57</sys_created_on>
+        <sys_id>e1ff18162b728350eb1cfbfdf291bf21</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>HP WXP Alert App Setup</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_e1ff18162b728350eb1cfbfdf291bf21</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 14:04:53</sys_updated_on>
+        <template><![CDATA[<div class="hp-setup-widget panel panel-default">
+<div class="panel-heading header-flex">
+    <div class="title">
+      App Setup
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm"
+              ng-click="!c.isRunning && c.runSetup()"
+              ng-disabled="c.isRunning">
+        {{c.isRunning ? 'Running...' : 'Setup App'}}
+      </button>
+      <button class="btn btn-danger btn-sm"
+              ng-click="c.resetSetup()">
+        Reset Setup
+      </button>
+    </div>
+  </div>
+
+
+<div class="panel-body">
+    <p class="mapping-subtitle">Run the initial setup to configure discovery sources, API connections, and integration settings.</p>
+
+
+<div class="section" ng-if="c.logs.length">
+
+
+<div class="text-center" ng-if="c.isRunning">
+        <i class="fa fa-spinner fa-spin"></i> Running setup...
+      </div>
+
+
+<div ng-repeat="log in c.logs track by $index"
+           ng-if="$index < c.currentIndex"
+           class="row-item">
+
+
+<div class="row-line">
+          <span class="icon">
+            <i class="fa"
+               ng-class="log.status ? 'fa-check-circle pass' : 'fa-times-circle fail'">
+            </i>
+          </span>
+          <span class="name">{{log.name}}</span>
+          <span class="value">{{log.message}}</span>
+
+
+<span class="help-hint"
+                ng-if="!log.status && (log.name === 'Discovery Source' || log.name === 'API Status' || log.name === 'API Key')">
+            For more details on how to configure
+          </span>
+
+
+<span class="help-toggle"
+                ng-if="!log.status && (log.name === 'Discovery Source' || log.name === 'API Status' || log.name === 'API Key')"
+                ng-click="c.toggleHelp($index)">
+            <i class="fa"
+               ng-class="log.showHelp ? 'fa-chevron-up' : 'fa-chevron-down'">
+            </i>
+          </span>
+        </div>
+
+
+<!-- DISCOVERY SOURCE -->
+        <div class="help-box"
+             ng-class="{'open': log.showHelp}"
+             ng-if="log.name === 'Discovery Source'">
+          <div class="help-content">
+            <div class="help-title">⚠️ Manual Fix Required</div>
+            <p>Create a new record:</p>
+            <ul>
+              <li><b>Table:</b> cmdb_ci_computer</li>
+              <li><b>Element:</b> discovery_source</li>
+              <li><b>Label:</b> HP Workforce Experience Platform</li>
+              <li><b>Value:</b> HP Workforce Experience Platform</li>
+            </ul>
+          </div>
+        </div>
+
+
+<!-- API -->
+        <div class="help-box"
+             ng-class="{'open': log.showHelp}"
+             ng-if="log.name === 'API Status' || log.name === 'API Key'">
+          <div class="help-content">
+            <div class="help-title">]]>🔌<![CDATA[ Connect HP WXP</div>
+            <ol>
+              <li>Login to WXP</li>
+              <li>Go to Integrations</li>
+              <li>Open ServiceNow Connector</li>
+              <li>Click Connect</li>
+              <li>Enter:
+                <ul>
+                  <li>Instance URL</li>
+                  <li>Username of user created in ServiceNow</li>
+                  <li>Password of the same user</li>
+                </ul>
+              </li>
+            </ol>
+            <p><b>Required:</b></p>
+            <ul>
+              <li>Application admin role: x_hpws_wrkfrcexpam.admin</li>
+              <li>User created in ServiceNow with Identity type as Machine</li>
+            </ul>
+          </div>
+        </div>
+
+
+</div>
+
+
+<div class="result text-center"
+           ng-if="!c.isRunning"
+           ng-class="c.success ? 'pass' : 'fail'">
+        {{c.finalMessage}}
+      </div>
+
+
+</div>
+
+
+</div>
+
+
+</div>]]></template>
+    </sp_widget>
+</record_update>

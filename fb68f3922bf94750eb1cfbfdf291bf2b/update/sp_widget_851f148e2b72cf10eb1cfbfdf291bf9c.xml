@@ -1,0 +1,825 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($scope, $window, $timeout) {
+
+    $scope.currentIndex = 0;
+    $scope.isLoading = true;
+    $scope.showFinal = false;
+    $scope.showToast = false;
+	
+	$scope.searchFilters = {};
+    $scope.selectedFilters = {};
+    $scope.suggestions = {};
+    $scope.showSuggestions = {};
+
+    $scope.currentPage = 1;
+    $scope.pageSize = 5;
+
+    function startAnimation() {
+        if (!$scope.data || !$scope.data.checks) {
+            $scope.isLoading = false;
+            return;
+        }
+
+        $scope.currentIndex = 0;
+        $scope.showFinal = false;
+
+        function step() {
+            if ($scope.currentIndex < $scope.data.checks.length) {
+                $scope.currentIndex++;
+                $timeout(step, 400);
+            } else {
+                $scope.isLoading = false;
+                $scope.showFinal = true;
+            }
+        }
+
+        step();
+    }
+
+    $timeout(startAnimation, 50);
+
+    $scope.refresh = function() {
+        $scope.server.get({}).then(function(res) {
+            $scope.data = res.data;
+            startAnimation();
+        });
+    };
+
+    // ✅ FILTER
+    $scope.columnFilterFn = function(row) {
+        for (var col in $scope.selectedFilters) {
+            var selected = $scope.selectedFilters[col];
+            if (!selected || selected.length === 0) continue;
+
+            var val = (row[col] || '').toString().toLowerCase();
+
+            var match = selected.some(function(s) {
+                return val === s.toLowerCase();
+            });
+
+            if (!match) return false;
+        }
+        return true;
+    };
+
+    // ✅ SUGGESTIONS
+    $scope.updateSuggestions = function(col) {
+
+        var input = ($scope.searchFilters[col] || '').toLowerCase();
+
+        var unique = {};
+        var values = [];
+
+        $scope.data.tenantTable.forEach(function(r) {
+
+            var v = (r[col] || '').toString().trim();
+            if (!v) return;
+
+            var lower = v.toLowerCase();
+
+            if (col === 'active') {
+                lower = (lower === 'true') ? 'true' : 'false';
+                v = lower.charAt(0).toUpperCase() + lower.slice(1);
+            }
+
+            if (!unique[lower]) {
+                unique[lower] = true;
+                values.push(v);
+            }
+        });
+
+        var filtered = values.filter(v =>
+            v.toLowerCase().includes(input)
+        );
+
+        $scope.suggestions[col] = filtered.slice(0, 5);
+        $scope.showSuggestions[col] =
+            filtered.length > 0 && input.length > 0;
+    };
+
+    $scope.selectSuggestion = function(col, val) {
+        if (!$scope.selectedFilters[col]) {
+            $scope.selectedFilters[col] = [];
+        }
+
+        if (!$scope.selectedFilters[col].includes(val)) {
+            $scope.selectedFilters[col].push(val);
+        }
+
+        $scope.searchFilters[col] = '';
+        $scope.showSuggestions[col] = false;
+        $scope.currentPage = 1;
+    };
+
+    $scope.removeFilter = function(col, val) {
+        var arr = $scope.selectedFilters[col];
+        var i = arr.indexOf(val);
+
+        if (i > -1) arr.splice(i, 1);
+        if (!arr.length) delete $scope.selectedFilters[col];
+
+        $scope.currentPage = 1;
+    };
+
+    $scope.handleKey = function(e, col) {
+
+        if (e.key === "Enter") {
+            e.preventDefault();
+            var list = $scope.suggestions[col] || [];
+
+            if (list.length > 0) {
+                $scope.selectSuggestion(col, list[0]);
+            } else {
+                $scope.showSuggestions[col] = false;
+            }
+        }
+
+        if (e.key === "Escape") {
+            $scope.showSuggestions[col] = false;
+        }
+
+        $scope.$evalAsync(function() {
+            if (!$scope.searchFilters[col]) {
+                $scope.showSuggestions[col] = false;
+            }
+        });
+    };
+
+    // ✅ SORT + PAGINATION
+    $scope.getFilteredData = function() {
+
+        if (!$scope.data || !$scope.data.tenantTable) return [];
+
+        var filtered = $scope.data.tenantTable.filter($scope.columnFilterFn);
+
+        // ✅ TRUE FIRST
+        filtered.sort(function(a, b) {
+            return (b.active == 'true' ? 1 : 0) - (a.active == 'true' ? 1 : 0);
+        });
+
+        var start = ($scope.currentPage - 1) * $scope.pageSize;
+        return filtered.slice(start, start + $scope.pageSize);
+    };
+
+    $scope.getTotalPages = function() {
+        var count = $scope.data.tenantTable.filter($scope.columnFilterFn).length;
+        return Math.max(Math.ceil(count / $scope.pageSize), 1);
+    };
+
+    $scope.nextPage = function() {
+        if ($scope.currentPage < $scope.getTotalPages())
+            $scope.currentPage++;
+    };
+
+    $scope.prevPage = function() {
+        if ($scope.currentPage > 1)
+            $scope.currentPage--;
+    };
+
+    $scope.goToWXP = function() {
+        $window.top.location.href = $scope.data.redirectUrl;
+    };
+
+    $scope.copyToClipboard = function(text) {
+        navigator.clipboard.writeText(text);
+        $scope.showToast = true;
+        $timeout(() => $scope.showToast = false, 1200);
+    };
+
+    angular.element(document).on('click', function() {
+        $scope.$applyAsync(() => $scope.showSuggestions = {});
+    });
+
+};]]></client_script>
+        <controller_as>c</controller_as>
+        <css>/* ✅ PANEL (UNIFIED STYLE) */&#13;
+.panel {&#13;
+    border: 1px solid #e5e7eb;&#13;
+    border-radius: 10px;&#13;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);&#13;
+}&#13;
+.mapping-subtitle {&#13;
+  font-size: 13px;&#13;
+  font-weight: 400;&#13;
+  color: #6b7280;&#13;
+  margin-bottom: 14px;&#13;
+  margin-top: 0;&#13;
+}&#13;
+&#13;
+/* ✅ HEADER */&#13;
+.panel-heading {&#13;
+    background: #f9fafb !important;&#13;
+    border-bottom: 1px solid #e5e7eb;&#13;
+    padding: 10px 14px;&#13;
+}&#13;
+&#13;
+.title {&#13;
+    font-size: 16px;&#13;
+    font-weight: 600;&#13;
+    color: #1f2937;&#13;
+}&#13;
+&#13;
+/* ✅ HEADER ACTIONS */&#13;
+.header-flex {&#13;
+    display: flex;&#13;
+    justify-content: space-between;&#13;
+    align-items: center;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-connection-widget {&#13;
+    border: 2px solid #e5e7eb !important;&#13;
+}&#13;
+&#13;
+.header-actions {&#13;
+    display: flex;&#13;
+    gap: 8px;&#13;
+}&#13;
+&#13;
+/* ✅ LOADING / ROWS */&#13;
+.row-item { margin-bottom: 10px; }&#13;
+&#13;
+.row-line {&#13;
+    display: flex;&#13;
+    align-items: center;&#13;
+    gap: 12px;&#13;
+}&#13;
+&#13;
+.icon { width: 25px; }&#13;
+&#13;
+.name { width: 180px; }&#13;
+&#13;
+.value { flex: 1; }&#13;
+&#13;
+/* ✅ STATUS COLORS */&#13;
+.pass { color: #22c55e; }&#13;
+.fail { color: #ef4444; }&#13;
+&#13;
+/* ✅ DEBUG */&#13;
+.debug {&#13;
+    margin-left: 37px;   /* aligns under name column */&#13;
+    margin-top: 2px;&#13;
+}&#13;
+&#13;
+&#13;
+/* ✅ make box FULL WIDTH */&#13;
+.debug-box {&#13;
+    position: relative;&#13;
+    width: calc(100% - 37px);  /* aligns with row width */&#13;
+}&#13;
+&#13;
+/* make view details in blue like a link */&#13;
+.debug summary {&#13;
+    cursor: pointer;&#13;
+    font-size: 12px;&#13;
+    color: #0076ce;&#13;
+}&#13;
+&#13;
+/* ✅ make content expand nicely */&#13;
+.debug-box pre {&#13;
+    white-space: pre-wrap;&#13;
+    word-break: break-word;&#13;
+    max-height: 250px;&#13;
+    overflow: auto;&#13;
+    background: #f9fafb;&#13;
+    padding: 10px;&#13;
+    border-radius: 6px;&#13;
+    border: 1px solid #e5e7eb;&#13;
+}&#13;
+&#13;
+/* ✅ FILTER INPUT */&#13;
+.filter-input {&#13;
+    width: 100%;&#13;
+    margin-top: 4px;&#13;
+    font-size: 11px;&#13;
+    padding: 4px;&#13;
+    border-radius: 6px;&#13;
+    border: 1px solid #d1d5db;&#13;
+}&#13;
+&#13;
+.filter-input:focus {&#13;
+    border-color: #0076ce;&#13;
+    box-shadow: 0 0 0 1px #0076ce;&#13;
+}&#13;
+&#13;
+/* ✅ SUGGESTIONS */&#13;
+.suggestions {&#13;
+    background: white;&#13;
+    border: 1px solid #ccc;&#13;
+    border-radius: 6px;&#13;
+    position: absolute;&#13;
+    z-index: 1000;&#13;
+    max-height: 120px;&#13;
+    overflow-y: auto;&#13;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);&#13;
+    list-style: none;   /* ✅ removes bullets */&#13;
+    padding-left: 0;    /* ✅ removes default indent */&#13;
+    margin: 0;&#13;
+}&#13;
+&#13;
+&#13;
+.suggestions li {&#13;
+    padding: 5px;&#13;
+    cursor: pointer;&#13;
+    list-style: none;&#13;
+}&#13;
+&#13;
+.suggestions li:hover {&#13;
+    background: #e6f2fb;&#13;
+}&#13;
+&#13;
+/* ✅ TABLE */&#13;
+.tenant-table {&#13;
+    margin-top: 12px;&#13;
+}&#13;
+&#13;
+.table {&#13;
+    background: white;&#13;
+    border-radius: 8px;&#13;
+}&#13;
+&#13;
+.table thead {&#13;
+    background: #f9fafb;&#13;
+}&#13;
+&#13;
+.table tbody tr:hover {&#13;
+    background: #f3f4f6;&#13;
+}&#13;
+&#13;
+/* ✅ ✅ ACTIVE ROW (MATCHES MAPPING WIDGET GREEN) */&#13;
+.active-row {&#13;
+    background: #ecfdf5 !important;&#13;
+    border-left: 4px solid #22c55e;&#13;
+}&#13;
+&#13;
+.active-row td {&#13;
+    color: #14532d;&#13;
+    font-weight: 500;&#13;
+}&#13;
+&#13;
+&#13;
+.hp-connection-widget .table tbody tr {&#13;
+    transition: background 0.15s ease;&#13;
+}&#13;
+&#13;
+/* ✅ HOVER FOR ACTIVE (GREEN) ROWS */&#13;
+.hp-connection-widget .active-row:hover {&#13;
+    background: #dcfce7 !important;   /* slightly darker green */&#13;
+}&#13;
+&#13;
+/* ✅ PAGINATION */&#13;
+.pagination-box {&#13;
+    margin-top: 10px;&#13;
+    text-align: center;&#13;
+}&#13;
+&#13;
+.pagination-box button {&#13;
+    margin: 0 5px;&#13;
+}&#13;
+&#13;
+/* ✅ CHIPS */&#13;
+.chip {&#13;
+    background: #e6f2fb;&#13;
+    border: 1px solid #90cdf4;&#13;
+    padding: 2px 6px;&#13;
+    margin: 2px;&#13;
+    border-radius: 12px;&#13;
+    font-size: 11px;&#13;
+    color: #034f84;&#13;
+}&#13;
+&#13;
+.chip .remove {&#13;
+    margin-left: 5px;&#13;
+    cursor: pointer;&#13;
+    font-weight: bold;&#13;
+}&#13;
+&#13;
+/* ✅ TOAST (MATCHED) */&#13;
+.toast {&#13;
+    position: fixed;&#13;
+    top: 20px;&#13;
+    left: 50%;&#13;
+    transform: translateX(-50%);&#13;
+&#13;
+    background: #e6f9f0;&#13;
+    color: #047857;&#13;
+    border: 1px solid #a7f3d0;&#13;
+&#13;
+    padding: 10px 16px;&#13;
+    border-radius: 8px;&#13;
+&#13;
+    font-size: 13px;&#13;
+    font-weight: 500;&#13;
+&#13;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);&#13;
+    z-index: 9999;&#13;
+&#13;
+    animation: toastSlide 1.3s ease;&#13;
+}&#13;
+&#13;
+@keyframes toastSlide {&#13;
+    0% { opacity:0; transform:translate(-50%,-10px);}&#13;
+    20% { opacity:1; transform:translate(-50%,0);}&#13;
+    80% { opacity:1; }&#13;
+    100% { opacity:0; transform:translate(-50%,-10px);}&#13;
+}&#13;
+&#13;
+/* ✅ DEBUG COPY */&#13;
+.debug-box { position: relative; }&#13;
+&#13;
+.copy-btn {&#13;
+    position: absolute;&#13;
+    top: 5px;&#13;
+    right: 5px;&#13;
+&#13;
+    background: #f3f4f6;&#13;
+    border: 1px solid #ccc;&#13;
+    font-size: 11px;&#13;
+    padding: 4px 8px;&#13;
+    cursor: pointer;&#13;
+    border-radius: 4px;&#13;
+}&#13;
+&#13;
+.copy-btn:hover {&#13;
+    background: #e5e7eb;&#13;
+}&#13;
+&#13;
+/* ✅ RESULT */&#13;
+.result {&#13;
+    margin-top: 20px;&#13;
+    padding-top: 12px;&#13;
+    font-size: 15px;&#13;
+    font-weight: 600;&#13;
+    text-align: center;&#13;
+    letter-spacing: 0.3px;&#13;
+}&#13;
+&#13;
+/* ✅ SUCCESS */&#13;
+.result.pass {&#13;
+    background: #ecfdf5;&#13;
+    border: 1px solid #bbf7d0;&#13;
+    color: #166534;&#13;
+    border-radius: 6px;&#13;
+    padding: 10px;&#13;
+}&#13;
+&#13;
+/* ✅ FAILURE */&#13;
+.result.fail {&#13;
+    background: #fef2f2;&#13;
+    border: 1px solid #fecaca;&#13;
+    color: #991b1b;&#13;
+    border-radius: 6px;&#13;
+    padding: 10px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The connection status dashboard. Displays the current API connection status (API Key, Base URL, Tenants) with pass/fail indicators, debug details, and filter/search capabilities. Shows whether the platform API is properly configured and reachable.</description>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>hp-wxp-alert-management-status</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP AM Status</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function() {
+
+    data.status = 'not_connected';
+    data.message = 'WXP is not connected.';
+    data.redirectUrl = 'https://workforceexperience.hp.com/ui/view/integrations';
+    data.checks = [];
+    data.tenantTable = [];
+
+    function maskKey(key) {
+        if (!key) return 'Missing';
+        return key.substring(0, 4) + '****' + key.slice(-2);
+    }
+
+    function getStatusLabel(status) {
+        if (status == 200) return 'Success';
+        if (status == 401) return 'Unauthorized';
+        if (status == 403) return 'Forbidden';
+        return 'Error';
+    }
+
+    try {
+
+        var apiKey = gs.getProperty('x_hpws_wrkfrcexpam.api.fastn.api.key');
+        var baseUrl = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+        var tenantId = gs.getProperty('x_hpws_wrkfrcexpam.tenants');
+        var spaceId = gs.getProperty('x_hpws_wrkfrcexpam.fastn.space.id');
+
+        // ✅ BASIC CHECKS
+        if (!apiKey) {
+            data.checks.push({ name: 'API Key', status: false, message: 'Missing' });
+            return;
+        }
+        data.checks.push({ name: 'API Key', status: true, message: maskKey(apiKey) });
+
+        if (!baseUrl) {
+            data.checks.push({ name: 'Base URL', status: false, message: 'Missing' });
+            return;
+        }
+        data.checks.push({ name: 'Base URL', status: true, message: baseUrl });
+
+        if (!tenantId) {
+            data.checks.push({ name: 'Tenant ID', status: false, message: 'Missing' });
+            return;
+        }
+        data.checks.push({ name: 'Tenant ID', status: true, message: tenantId });
+
+        if (!spaceId) {
+            data.checks.push({ name: 'Space ID', status: false, message: 'Missing' });
+            return;
+        }
+        data.checks.push({ name: 'Space ID', status: true, message: spaceId });
+
+        // ✅ API CALL
+        var endpoint = baseUrl + '/api/v1/getTenantsChildren';
+
+        var r = new sn_ws.RESTMessageV2();	//'HP  WXP Alert Management','Get Customers of Partner'
+        r.setEndpoint(endpoint);
+        r.setHttpMethod('POST');
+
+        r.setRequestHeader('Content-Type', 'application/json');
+        r.setRequestHeader('fastn-space-id', spaceId);
+        r.setRequestHeader('x-fastn-api-key', apiKey);
+        r.setRequestHeader('x-fastn-space-tenantid', tenantId);
+
+        r.setRequestBody(JSON.stringify({ input: {} }));
+
+        var response = r.execute();
+        var status = response.getStatusCode();
+        var body = response.getBody();
+
+        var success = status >= 200 && status < 300;
+
+        data.checks.push({
+            name: 'API Connection',
+            status: success,
+            code: status,
+            message: getStatusLabel(status),
+            debug:
+                "Endpoint: " + endpoint +
+                "\nStatus: " + status +
+                "\nResponse: " + (body || 'No response')
+        });
+
+        if (!success) {
+            data.message = 'API Authentication failed';
+            return;
+        }
+
+        // ✅ TENANT TABLE
+        var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
+        tenantGr.query();
+
+        var tenantValid = false;
+        var activeCount = 0;
+
+        if (!tenantGr.hasNext()) {
+
+            data.checks.push({
+                name: 'Tenant Validation',
+                status: false,
+                message: 'No records found for this tenant'
+            });
+
+            data.message = 'Tenant validation failed';
+            return;
+        }
+
+        while (tenantGr.next()) {
+
+            var activeRaw = tenantGr.getValue('active');
+            var isActive = (activeRaw == '1' || activeRaw == 'true');
+
+            data.tenantTable.push({
+                tenant: tenantGr.getDisplayValue('tenantid'),
+                name: tenantGr.getDisplayValue('tenant'),
+                active: tenantGr.getDisplayValue('active')
+            });
+
+            if (isActive) {
+                tenantValid = true;
+                activeCount++;
+            }
+        }
+
+        data.checks.push({
+            name: 'Tenant Validation',
+            status: tenantValid,
+            message: tenantValid ?
+                'Valid tenant configuration found (' + activeCount + ' active record(s))' :
+                'Records found but no active tenants'
+        });
+
+        if (!tenantValid) {
+            data.message = 'Tenant validation failed';
+            return;
+        }
+
+        data.status = 'connected';
+        data.message = 'Connected to WXP';
+
+    } catch (e) {
+
+        data.checks.push({
+            name: 'Unexpected Error',
+            status: false,
+            message: e.message
+        });
+
+        data.message = 'Unexpected error occurred.';
+    }
+
+})();
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-20 13:32:40</sys_created_on>
+        <sys_id>851f148e2b72cf10eb1cfbfdf291bf9c</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>HP WXP AM Status</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_851f148e2b72cf10eb1cfbfdf291bf9c</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 11:15:33</sys_updated_on>
+        <template><![CDATA[<div class="hp-connection-widget panel panel-default">
+
+    <div class="panel-heading header-flex">
+        <div class="title">Connection Status</div>
+
+        <div class="header-actions">
+            <button class="btn btn-primary btn-sm" ng-click="goToWXP()">Reconnect WXP</button>
+            <button class="btn btn-primary btn-sm" ng-click="refresh()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="panel-body">
+      <p class="mapping-subtitle">Validates your API connection, credentials, and tenant configuration with HP Workforce Experience Platform.</p>
+
+        <!-- ✅ TOAST -->
+        <div class="toast" ng-if="showToast">✅ Copied</div>
+
+        <!-- ✅ LOADING -->
+        <div class="text-center" ng-if="isLoading">
+            <i class="fa fa-spinner fa-spin"></i> Validating...
+        </div>
+
+        <!-- ✅ CHECKS -->
+        <div ng-repeat="check in data.checks track by $index"
+             ng-if="$index < currentIndex"
+             class="row-item">
+
+            <div class="row-line">
+                <span class="icon">
+                    <i class="fa"
+                       ng-class="check.status ? 'fa-check-circle pass' : 'fa-times-circle fail'">
+                    </i>
+                </span>
+
+                <span class="name">{{check.name}}</span>
+                <span class="value">{{check.message}}</span>
+            </div>
+
+            <details ng-if="check.debug" class="debug">
+                <summary>View Details</summary>
+                <div class="debug-box">
+                    <button class="copy-btn"
+                            ng-click="copyToClipboard(check.debug)">
+                        Copy
+                    </button>
+                    <pre>{{check.debug}}</pre>
+                </div>
+            </details>
+
+        </div>
+
+        <!-- ✅ TABLE -->
+        <div ng-if="showFinal && data.tenantTable.length" class="tenant-table">
+
+            <table class="table table-bordered table-sm">
+
+                <thead>
+                    <tr>
+
+                        <!-- TENANT ID -->
+                        <th style="position:relative;">
+                            <div>Tenant ID</div>
+                            <input ng-model="searchFilters.tenant"
+                                   ng-change="updateSuggestions('tenant')"
+                                   ng-keydown="handleKey($event, 'tenant')"
+                                   placeholder="Search..." class="filter-input">
+
+                            <div class="chip-container" ng-if="selectedFilters.tenant">
+                                <span class="chip" ng-repeat="c in selectedFilters.tenant">
+                                    {{c}}
+                                    <span class="remove" ng-click="removeFilter('tenant', c)">×</span>
+                                </span>
+                            </div>
+
+                            <ul class="suggestions"
+                                ng-if="showSuggestions.tenant && suggestions.tenant.length">
+                                <li ng-repeat="s in suggestions.tenant"
+                                    ng-click="selectSuggestion('tenant', s)">
+                                    {{s}}
+                                </li>
+                            </ul>
+                        </th>
+
+                        <!-- TENANT NAME -->
+                        <th style="position:relative;">
+                            <div>Tenant Name</div>
+                            <input ng-model="searchFilters.name"
+                                   ng-change="updateSuggestions('name')"
+                                   ng-keydown="handleKey($event, 'name')"
+                                   placeholder="Search..." class="filter-input">
+
+                            <div class="chip-container" ng-if="selectedFilters.name">
+                                <span class="chip" ng-repeat="c in selectedFilters.name">
+                                    {{c}}
+                                    <span class="remove" ng-click="removeFilter('name', c)">×</span>
+                                </span>
+                            </div>
+
+                            <ul class="suggestions"
+                                ng-if="showSuggestions.name && suggestions.name.length">
+                                <li ng-repeat="s in suggestions.name"
+                                    ng-click="selectSuggestion('name', s)">
+                                    {{s}}
+                                </li>
+                            </ul>
+                        </th>
+
+                        <!-- ACTIVE -->
+                        <th style="position:relative;">
+                            <div>Active</div>
+                            <input ng-model="searchFilters.active"
+                                   ng-change="updateSuggestions('active')"
+                                   ng-keydown="handleKey($event, 'active')"
+                                   placeholder="Search..." class="filter-input">
+
+                            <div class="chip-container" ng-if="selectedFilters.active">
+                                <span class="chip" ng-repeat="c in selectedFilters.active">
+                                    {{c}}
+                                    <span class="remove" ng-click="removeFilter('active', c)">×</span>
+                                </span>
+                            </div>
+
+                            <ul class="suggestions"
+                                ng-if="showSuggestions.active && suggestions.active.length">
+                                <li ng-repeat="s in suggestions.active"
+                                    ng-click="selectSuggestion('active', s)">
+                                    {{s}}
+                                </li>
+                            </ul>
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr ng-repeat="row in getFilteredData() track by $index"
+                        ng-class="{'active-row': row.active == 'true' || row.active === true}">
+
+                        <td>{{row.tenant}}</td>
+                        <td>{{row.name}}</td>
+                        <td>{{row.active}}</td>
+
+                    </tr>
+                </tbody>
+
+            </table>
+
+            <!-- ✅ PAGINATION -->
+            <div class="pagination-box">
+                <button ng-click="prevPage()">Prev</button>
+                Page {{currentPage}} / {{getTotalPages()}}
+                <button ng-click="nextPage()">Next</button>
+            </div>
+
+        </div>
+
+        <!-- ✅ FINAL -->
+        <div class="result text-center"
+             ng-if="showFinal"
+             ng-class="data.status=='connected' ? 'pass' : 'fail'">
+            {{data.message}}
+        </div>
+
+    </div>
+
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

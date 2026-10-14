@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>active</field>
+        <global>true</global>
+        <isolate_script>true</isolate_script>
+        <messages/>
+        <name>HP WXP AM: Confirm Activation Warning</name>
+        <order/>
+        <script><![CDATA[function onChange(control, oldValue, newValue, isLoading) {
+    if (isLoading) {
+        return;
+    }
+    if (newValue != 'true' && newValue != '1') {
+        return;
+    }
+
+
+    if (g_scratchpad.show_warning) {
+        var tenantName = g_form.getDisplayValue('tenant');
+        g_form.addErrorMessage(
+            '⚠️ Warning: "' + tenantName + '" was not found in the latest WEX API response. ' +
+            'It may have been manually created or deleted from WEX. ' +
+            'Alert imports may fail if the Tenant ID is incorrect.'
+        );
+    }
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-24 07:13:58</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e24fe343ebb2071030f9f95ccad0cdab</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>HP WXP AM: Confirm Activation Warning</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_client_e24fe343ebb2071030f9f95ccad0cdab</sys_update_name>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-08-24 07:13:58</sys_updated_on>
+        <table>x_hpws_wrkfrcexpam_tenant_list</table>
+        <type>onChange</type>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

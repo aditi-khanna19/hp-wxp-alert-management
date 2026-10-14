@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.AlertIngest</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Stages a batch of HP WXP alerts into x_hpws_wrkfrcexpam_hp_alert_inc_import_set and runs the 'HP WXP Alert to Incident' transform map synchronously, so the caller gets the incident number back in the same response. Backs the POST /alerts resource of the alert_import Scripted REST API.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>AlertIngest</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var AlertIngest = Class.create();
+AlertIngest.prototype = {
+    STAGING_TABLE: 'x_hpws_wrkfrcexpam_hp_alert_inc_import_set',
+    LOG_TABLE: 'x_hpws_wrkfrcexpam_incoming_alert_log',
+    TRANSFORM_MAP: 'ccf5939f2b750710eb1cfbfdf291bf79',
+    MAX_BATCH: 100,
+    REQUIRED_FIELDS: ['eventType', 'schemaVersion', 'alertRuleId', 'itsmType', 'u_title', 'u_impact', 'u_urgency', 'u_assignmentgroupid', 'u_category'],
+    MAPPED_FIELDS: ['u_id', 'u_displayid', 'u_title', 'u_description', 'u_status', 'u_impact', 'u_urgency', 'u_assignmentgroupid', 'u_category', 'u_subcategory', 'u_devicedetails', 'u_companydetails', 'u_type', 'u_subtype', 'u_sourcelocation', 'u_alertruleid', 'u_occuredat', 'u_createdat', 'u_updatedat', 'u_tenantid', 'u_userid', 'u_userdetails', 'u_metadata'],
+    initialize: function() {},
+    importBatch: function(alerts) {
+        var i;
+        if (!alerts || !Array.isArray(alerts))
+            return this._reject('Body must contain an "alerts" array.');
+        if (alerts.length === 0)
+            return this._reject('"alerts" is empty - send at least one alert.');
+        if (alerts.length > this.MAX_BATCH)
+            return this._reject('Batch of ' + alerts.length + ' alerts exceeds the maximum of ' + this.MAX_BATCH + '.');
+        var logIds = [];
+        for (i = 0; i < alerts.length; i++)
+            logIds.push(this._logIncoming(alerts[i]));
+        var staged = [];
+        for (i = 0; i < alerts.length; i++) {
+            var mapped = this._toColumns(alerts[i]);
+            if (mapped.error) {
+                this._logError(logIds[i], 'alerts[' + i + ']: ' + mapped.error);
+                return this._reject('alerts[' + i + ']: ' + mapped.error, mapped.missingFields, i);
+            }
+            staged.push(mapped.fields);
+        }
+        var importSet = new GlideRecordSecure('sys_import_set');
+        importSet.initialize();
+        importSet.setValue('table_name', this.STAGING_TABLE);
+        importSet.setValue('short_description', 'HP WXP alert batch (' + staged.length + ')');
+        importSet.setValue('state', 'loading');
+        var importSetId = importSet.insert();
+        if (!importSetId)
+            return {
+                ok: false,
+                status: 500,
+                error: 'Could not create the import set.'
+            };
+        var rowIds = [];
+        for (i = 0; i < staged.length; i++) {
+            rowIds.push(this._stageRow(importSetId, staged[i]));
+        }
+        importSet.setValue('state', 'loaded');
+        importSet.update();
+        var transformer = new GlideImportSetTransformer();
+        transformer.setImportSetID(importSetId);
+        transformer.setMapID(this.TRANSFORM_MAP);
+        transformer.setSyncImport(true);
+        var importSetRec = new GlideRecord('sys_import_set');
+        if (importSetRec.get(importSetId)) {
+            transformer.transformAllMaps(importSetRec);
+            return {
+                ok: true,
+                import_set: importSet.getValue('number'),
+                import_set_id: importSetId,
+                staging_table: this.STAGING_TABLE,
+                batch_size: staged.length,
+                incidents: this._results(rowIds, alerts, logIds)
+            };
+        } else {
+            return {
+                ok: false
+            };
+        }
+
+    },
+    _stageRow: function(importSetId, fields) {
+        var row = new GlideRecordSecure(this.STAGING_TABLE);
+        row.initialize();
+        row.setValue('sys_import_set', importSetId);
+        for (var column in fields) {
+            if (fields.hasOwnProperty(column))
+                row.setValue(column, fields[column]);
+        }
+        return row.insert();
+    },
+    _results: function(rowIds, alerts, logIds) {
+        var out = [];
+        for (var i = 0; i < rowIds.length; i++)
+            out.push(this._rowResult(rowIds[i], alerts[i], logIds[i]));
+        return out;
+    },
+    _rowResult: function(rowId, alert, logId) {
+        var isFleet = !!alert.fleetAlertId;
+        var entry = {
+            eventType: alert.eventType,
+            schemaVersion: alert.schemaVersion,
+            tenantId: this._tenantId(),
+            alertRuleId: this._asString(alert.alertRuleId),
+            fleetAlertId: isFleet ? this._asString(alert.fleetAlertId) : null,
+            deviceAlertId: isFleet ? null : this._asString(alert.deviceAlertId),
+            itsmType: alert.itsmType,
+            u_id: alert.u_id === undefined ? null : alert.u_id,
+            incidentId: null,
+            displayId: null,
+            newState: null,
+            priority: null,
+            assignedTo: null,
+            resolvedAt: null,
+            comments: null,
+            processedAt: this._isoNow(),
+            error: null
+        };
+        var row = new GlideRecordSecure(this.STAGING_TABLE);
+        if (!rowId || !row.get(rowId)) {
+            entry.error = 'The alert could not be staged.';
+            this._logResult(logId, entry);
+            return entry;
+        }
+        var importState = row.getValue('sys_import_state') || 'pending';
+        var table = row.getValue('sys_target_table') || '';
+        var sysId = row.getValue('sys_target_sys_id') || '';
+        if (importState === 'error' || !sysId || !table) {
+            entry.error = row.getValue('sys_import_state_comment') || 'Transform did not produce an incident.';
+            this._logResult(logId, entry);
+            return entry;
+        }
+        var target = new GlideRecordSecure(table);
+        if (target.get(sysId)) {
+            entry.incidentId = target.getUniqueValue();
+            entry.displayId = target.getValue('number');
+            entry.newState = this._stateLabel(target.getValue('state'));
+            entry.priority = this._priorityLabel(target.getValue('priority'));
+            entry.assignedTo = (target.assigned_to.email + '') || null;
+            entry.resolvedAt = target.getValue('resolved_at') || null;
+            entry.comments = target.comments.getJournalEntry(1) || null;
+        } else {
+            entry.error = 'Target record ' + sysId + ' not found on ' + table + '.';
+        }
+        this._logResult(logId, entry);
+        return entry;
+    },
+    _toColumns: function(alert) {
+        if (!alert || typeof alert !== 'object' || Array.isArray(alert))
+            return {
+                error: 'Expected an object.'
+            };
+        var i;
+        var missing = [];
+        for (i = 0; i < this.REQUIRED_FIELDS.length; i++) {
+            if (!alert[this.REQUIRED_FIELDS[i]])
+                missing.push(this.REQUIRED_FIELDS[i]);
+        }
+        var hasFleet = !!alert.fleetAlertId;
+        var hasDevice = !!alert.deviceAlertId;
+        if (!hasFleet && !hasDevice)
+            missing.push('fleetAlertId or deviceAlertId');
+        if (missing.length)
+            return {
+                error: 'Missing required field(s): ' + missing.join(', ') + '.',
+                missingFields: missing
+            };
+        if (hasFleet && hasDevice)
+            return {
+                error: 'Exactly one of "fleetAlertId" or "deviceAlertId" is required, not both.'
+            };
+        var identifier = hasFleet ? alert.fleetAlertId : alert.deviceAlertId;
+        var fields = {
+            u_alert_rule_id: this._asString(alert.alertRuleId),
+            u_alert_id: this._asString(identifier)
+        };
+        for (i = 0; i < this.MAPPED_FIELDS.length; i++) {
+            var key = this.MAPPED_FIELDS[i];
+            if (alert.hasOwnProperty(key))
+                fields[key] = this._asString(alert[key]);
+        }
+        return {
+            fields: fields
+        };
+    },
+    _logIncoming: function(alert) {
+        try {
+            var isFleet = !!(alert && alert.fleetAlertId);
+            var entry = {
+                eventType: alert && alert.eventType,
+                schemaVersion: alert && alert.schemaVersion,
+                tenantId: this._tenantId(),
+                alertRuleId: alert && alert.alertRuleId,
+                fleetAlertId: isFleet ? alert.fleetAlertId : null,
+                deviceAlertId: isFleet ? null : (alert && alert.deviceAlertId),
+                itsmType: alert && alert.itsmType,
+                u_id: (alert && alert.u_id !== undefined) ? alert.u_id : null,
+                incidentId: null,
+                displayId: null,
+                newState: null,
+                priority: null,
+                assignedTo: null,
+                resolvedAt: null,
+                comments: null,
+                processedAt: this._isoNow(),
+                error: null
+            };
+            var log = new GlideRecordSecure(this.LOG_TABLE);
+            log.initialize();
+            log.setValue('alert_data', JSON.stringify(entry));
+            return log.insert();
+        } catch (e) {
+            gs.error('AlertIngest._logIncoming failed: ' + e);
+            return null;
+        }
+    },
+    _logResult: function(logId, entry) {
+        if (!logId)
+            return;
+        try {
+            var log = new GlideRecordSecure(this.LOG_TABLE);
+            if (!log.get(logId))
+                return;
+            log.setValue('alert_data', JSON.stringify(entry));
+            log.update();
+        } catch (e) {
+            gs.error('AlertIngest._logResult failed: ' + e);
+        }
+    },
+    _logError: function(logId, message) {
+        if (!logId)
+            return;
+        try {
+            var log = new GlideRecordSecure(this.LOG_TABLE);
+            if (!log.get(logId))
+                return;
+            var entry = {};
+            try {
+                entry = JSON.parse(log.getValue('alert_data') || '{}');
+            } catch (e2) {
+                entry = {};
+            }
+            entry.error = message;
+            log.setValue('alert_data', JSON.stringify(entry));
+            log.update();
+        } catch (e) {
+            gs.error('AlertIngest._logError failed: ' + e);
+        }
+    },
+    _tenantId: function() {
+        return gs.getProperty('x_hpws_wrkfrcexpam.tenants', '');
+    },
+    _isoNow: function() {
+        var v = new GlideDateTime().getValue();
+        return v.substring(0, 10) + 'T' + v.substring(11) + 'Z';
+    },
+    _stateLabel: function(rawState) {
+        var labels = {
+            '1': 'New',
+            '2': 'In Progress',
+            '3': 'On Hold',
+            '6': 'Resolved',
+            '7': 'Closed',
+            '8': 'Canceled'
+        };
+        return labels[rawState] || '';
+    },
+    _priorityLabel: function(rawPriority) {
+        var labels = {
+            '1': 'Critical',
+            '2': 'High',
+            '3': 'Moderate',
+            '4': 'Low',
+            '5': 'Planning'
+        };
+        return labels[rawPriority] || '';
+    },
+    _asString: function(value) {
+        if (value === null || value === undefined)
+            return '';
+        if (typeof value === 'object')
+            return JSON.stringify(value);
+        return '' + value;
+    },
+    _reject: function(message, missingFields, alertIndex) {
+        var result = {
+            ok: false,
+            status: 400,
+            error: message
+        };
+        if (missingFields)
+            result.missingFields = missingFields;
+        if (alertIndex !== undefined && alertIndex !== null)
+            result.alertIndex = alertIndex;
+        return result;
+    },
+    type: 'AlertIngest'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:55:10</sys_created_on>
+        <sys_id>207d62592b760b10eb1cfbfdf291bf8f</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>AlertIngest</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_207d62592b760b10eb1cfbfdf291bf8f</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 11:48:16</sys_updated_on>
+    </sys_script_include>
+</record_update>
