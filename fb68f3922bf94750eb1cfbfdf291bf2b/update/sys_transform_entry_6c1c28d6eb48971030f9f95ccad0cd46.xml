@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_transform_entry">
+    <sys_transform_entry action="INSERT_OR_UPDATE">
+        <choice_action>ignore</choice_action>
+        <coalesce>false</coalesce>
+        <coalesce_case_sensitive>false</coalesce_case_sensitive>
+        <coalesce_empty_fields>false</coalesce_empty_fields>
+        <date_format>yyyy-MM-dd HH:mm:ss</date_format>
+        <map display_value="HP WXP Alert to Incident">ccf5939f2b750710eb1cfbfdf291bf79</map>
+        <reference_value_field>sys_id</reference_value_field>
+        <source_field>[Script]</source_field>
+        <source_script><![CDATA[answer = (function transformEntry(source) {
+
+    // A re-post must not touch the caller: an agent may have corrected it, and with Copy empty
+    // fields on, returning nothing here would blank it.
+    if (action == 'update')
+        return target.getValue('caller_id');
+
+    // The alert's user when they exist in ServiceNow, otherwise the integration user creating the
+    // incident - this transform runs inside the /alerts request, in that user's session.
+    // 'Referenced value field name' on this map is sys_id, so the platform takes the value as is.
+    var user = JSON.parse(source.u_userdetails || '{}');
+    return findCaller(user) || gs.getUserID();
+
+    /** Match the alert's user to a ServiceNow user by email, then by user name. */
+    function findCaller(details) {
+        var attempts = [
+            { field: 'email', value: details.emailId },
+            { field: 'user_name', value: details.userName },
+            { field: 'name', value: details.userName }
+        ];
+        for (var i = 0; i < attempts.length; i++) {
+            if (!attempts[i].value)
+                continue;
+            var candidate = new GlideRecord('sys_user');
+            candidate.addQuery(attempts[i].field, attempts[i].value);
+            candidate.addQuery('active', true);
+            candidate.setLimit(1);
+            candidate.query();
+            if (candidate.next())
+                return candidate.getUniqueValue();
+        }
+        return '';
+    }
+
+})(source);]]></source_script>
+        <source_table>x_hpws_wrkfrcexpam_hp_alert_inc_import_set</source_table>
+        <sys_class_name>sys_transform_entry</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 12:22:19</sys_created_on>
+        <sys_id>6c1c28d6eb48971030f9f95ccad0cd46</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>[Script]</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_transform_entry_6c1c28d6eb48971030f9f95ccad0cd46</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 12:22:19</sys_updated_on>
+        <target_field>caller_id</target_field>
+        <target_table>incident</target_table>
+        <use_source_script>true</use_source_script>
+    </sys_transform_entry>
+</record_update>

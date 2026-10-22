@@ -475,7 +475,7 @@
 }</css>
         <data_table>sp_instance</data_table>
         <demo_data/>
-        <description>The connection status dashboard. Displays the current API connection status (API Key, Base URL, Tenants) with pass/fail indicators, debug details, and filter/search capabilities. Shows whether the platform API is properly configured and reachable.</description>
+        <description>The connection status dashboard. Displays the current API connection status (API Key, Base URL) with pass/fail indicators, debug details, and filter/search capabilities. Shows whether the platform API is properly configured and reachable.</description>
         <docs/>
         <field_list/>
         <has_preview>false</has_preview>
@@ -528,11 +528,11 @@
         }
         data.checks.push({ name: 'Base URL', status: true, message: baseUrl });
 
-        if (!tenantId) {
-            data.checks.push({ name: 'Tenant ID', status: false, message: 'Missing' });
-            return;
-        }
-        data.checks.push({ name: 'Tenant ID', status: true, message: tenantId });
+        // if (!tenantId) {
+        //     data.checks.push({ name: 'Tenant ID', status: false, message: 'Missing' });
+        //     return;
+        // }
+        //data.checks.push({ name: 'Tenant ID', status: true, message: tenantId });
 
         if (!spaceId) {
             data.checks.push({ name: 'Space ID', status: false, message: 'Missing' });
@@ -583,47 +583,46 @@
         var tenantValid = false;
         var activeCount = 0;
 
-        if (!tenantGr.hasNext()) {
+        // if (!tenantGr.hasNext()) {
 
-            data.checks.push({
-                name: 'Tenant Validation',
-                status: false,
-                message: 'No records found for this tenant'
-            });
+        //     data.checks.push({
+        //         name: 'Tenant Validation',
+        //         status: false,
+        //         message: 'No records found for this tenant'
+        //     });
 
-            data.message = 'Tenant validation failed';
-            return;
-        }
+        //     data.message = 'Tenant validation failed';
+        //     return;
+        // }
 
-        while (tenantGr.next()) {
+        // while (tenantGr.next()) {
 
-            var activeRaw = tenantGr.getValue('active');
-            var isActive = (activeRaw == '1' || activeRaw == 'true');
+ //     var activeRaw = tenantGr.getValue('active');
+ //     var isActive = (activeRaw == '1' || activeRaw == 'true');
+        //     data.tenantTable.push({
+        //         tenant: tenantGr.getDisplayValue('tenantid'),
+        //         name: tenantGr.getDisplayValue('tenant'),
+        //         active: tenantGr.getDisplayValue('active')
+        //     });
 
-            data.tenantTable.push({
-                tenant: tenantGr.getDisplayValue('tenantid'),
-                name: tenantGr.getDisplayValue('tenant'),
-                active: tenantGr.getDisplayValue('active')
-            });
+        //     if (isActive) {
+        //         tenantValid = true;
+        //         activeCount++;
+        //     }
+        // }
 
-            if (isActive) {
-                tenantValid = true;
-                activeCount++;
-            }
-        }
+        // data.checks.push({
+        //     name: 'Tenant Validation',
+        //     status: tenantValid,
+        //     message: tenantValid ?
+        //         'Valid tenant configuration found (' + activeCount + ' active record(s))' :
+        //         'Records found but no active tenants'
+        // });
 
-        data.checks.push({
-            name: 'Tenant Validation',
-            status: tenantValid,
-            message: tenantValid ?
-                'Valid tenant configuration found (' + activeCount + ' active record(s))' :
-                'Records found but no active tenants'
-        });
-
-        if (!tenantValid) {
-            data.message = 'Tenant validation failed';
-            return;
-        }
+        // if (!tenantValid) {
+        //     data.message = 'Tenant validation failed';
+        //     return;
+        // }
 
         data.status = 'connected';
         data.message = 'Connected to WXP';
@@ -646,14 +645,14 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-20 13:32:40</sys_created_on>
         <sys_id>851f148e2b72cf10eb1cfbfdf291bf9c</sys_id>
-        <sys_mod_count>14</sys_mod_count>
+        <sys_mod_count>15</sys_mod_count>
         <sys_name>HP WXP AM Status</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sp_widget_851f148e2b72cf10eb1cfbfdf291bf9c</sys_update_name>
         <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-12 11:15:33</sys_updated_on>
+        <sys_updated_on>2026-10-22 10:36:59</sys_updated_on>
         <template><![CDATA[<div class="hp-connection-widget panel panel-default">
 
     <div class="panel-heading header-flex">
@@ -666,7 +665,7 @@
     </div>
 
     <div class="panel-body">
-      <p class="mapping-subtitle">Validates your API connection, credentials, and tenant configuration with HP Workforce Experience Platform.</p>
+      <p class="mapping-subtitle">Validates your API connection and credentials with HP Workforce Experience Platform.</p>
 
         <!-- ✅ TOAST -->
         <div class="toast" ng-if="showToast">✅ Copied</div>

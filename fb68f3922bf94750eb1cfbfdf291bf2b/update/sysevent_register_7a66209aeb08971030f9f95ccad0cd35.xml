@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysevent_register">
+    <sysevent_register action="INSERT_OR_UPDATE">
+        <caller_access/>
+        <derived_priority>100</derived_priority>
+        <description>Sends the ITSM callback for an alert incident to Fastn, outside the incident's save. parm1 = event t</description>
+        <event_name>x_hpws_wrkfrcexpam.itsm.callback</event_name>
+        <fired_by>HP WXP AM Lifecycle Callback</fired_by>
+        <priority>100</priority>
+        <queue/>
+        <suffix>itsm.callback</suffix>
+        <sys_class_name>sysevent_register</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 11:57:38</sys_created_on>
+        <sys_id>7a66209aeb08971030f9f95ccad0cd35</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_hpws_wrkfrcexpam.itsm.callback</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sysevent_register_7a66209aeb08971030f9f95ccad0cd35</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:57:38</sys_updated_on>
+        <table>incident</table>
+    </sysevent_register>
+</record_update>

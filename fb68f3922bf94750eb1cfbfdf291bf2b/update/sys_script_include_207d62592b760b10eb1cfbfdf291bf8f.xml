@@ -13,11 +13,16 @@
 AlertIngest.prototype = {
     STAGING_TABLE: 'x_hpws_wrkfrcexpam_hp_alert_inc_import_set',
     LOG_TABLE: 'x_hpws_wrkfrcexpam_incoming_alert_log',
-    TRANSFORM_MAP: 'ccf5939f2b750710eb1cfbfdf291bf79',
-    MAX_BATCH: 100,
+    INBOUND_FLAG: 'x_hpws_wrkfrcexpam.inbound_alert',
+    MAX_BATCH: 99,
     REQUIRED_FIELDS: ['eventType', 'schemaVersion', 'alertRuleId', 'itsmType', 'u_title', 'u_impact', 'u_urgency', 'u_assignmentgroupid', 'u_category'],
     MAPPED_FIELDS: ['u_id', 'u_displayid', 'u_title', 'u_description', 'u_status', 'u_impact', 'u_urgency', 'u_assignmentgroupid', 'u_category', 'u_subcategory', 'u_devicedetails', 'u_companydetails', 'u_type', 'u_subtype', 'u_sourcelocation', 'u_alertruleid', 'u_occuredat', 'u_createdat', 'u_updatedat', 'u_tenantid', 'u_userid', 'u_userdetails', 'u_metadata'],
     initialize: function() {},
+    // Platform default: the alert rows are inserted straight into the staging table, the way the
+    // Import Set API does it. The platform puts each row in the table's Synchronous import set
+    // (creating one when none is Loading) and runs the transform map as soon as the row is
+    // inserted, so the row comes back with sys_target_sys_id set. No sys_import_set record is
+    // created here and GlideImportSetTransformer is not called.
     importBatch: function(alerts) {
         var i;
         if (!alerts || !Array.isArray(alerts))
@@ -38,55 +43,55 @@ AlertIngest.prototype = {
             }
             staged.push(mapped.fields);
         }
-        var importSet = new GlideRecordSecure('sys_import_set');
-        importSet.initialize();
-        importSet.setValue('table_name', this.STAGING_TABLE);
-        importSet.setValue('short_description', 'HP WXP alert batch (' + staged.length + ')');
-        importSet.setValue('state', 'loading');
-        var importSetId = importSet.insert();
-        if (!importSetId)
-            return {
-                ok: false,
-                status: 500,
-                error: 'Could not create the import set.'
-            };
+        // Each insert is transformed before the next one starts, so results come back in order.
+        // While the flag is set, the Lifecycle Callback business rule skips the incidents this
+        // batch updates, so Fastn is not sent its own change back as a callback.
+        var session = gs.getSession();
         var rowIds = [];
-        for (i = 0; i < staged.length; i++) {
-            rowIds.push(this._stageRow(importSetId, staged[i]));
+        session.putClientData(this.INBOUND_FLAG, 'true');
+        try {
+            for (i = 0; i < staged.length; i++)
+                rowIds.push(this._stageRow(staged[i]));
+        } finally {
+            session.putClientData(this.INBOUND_FLAG, '');
         }
-        importSet.setValue('state', 'loaded');
-        importSet.update();
-        var transformer = new GlideImportSetTransformer();
-        transformer.setImportSetID(importSetId);
-        transformer.setMapID(this.TRANSFORM_MAP);
-        transformer.setSyncImport(true);
-        var importSetRec = new GlideRecord('sys_import_set');
-        if (importSetRec.get(importSetId)) {
-            transformer.transformAllMaps(importSetRec);
-            return {
-                ok: true,
-                import_set: importSet.getValue('number'),
-                import_set_id: importSetId,
-                staging_table: this.STAGING_TABLE,
-                batch_size: staged.length,
-                incidents: this._results(rowIds, alerts, logIds)
-            };
-        } else {
-            return {
-                ok: false
-            };
-        }
-
+        var importSet = this._importSetOf(rowIds);
+        return {
+            ok: true,
+            import_set: importSet.number,
+            import_set_id: importSet.sysId,
+            staging_table: this.STAGING_TABLE,
+            batch_size: staged.length,
+            incidents: this._results(rowIds, alerts, logIds)
+        };
     },
-    _stageRow: function(importSetId, fields) {
+    _stageRow: function(fields) {
         var row = new GlideRecordSecure(this.STAGING_TABLE);
         row.initialize();
-        row.setValue('sys_import_set', importSetId);
         for (var column in fields) {
             if (fields.hasOwnProperty(column))
                 row.setValue(column, fields[column]);
         }
         return row.insert();
+    },
+    /**
+     * The import set the platform put the batch in. Rows inserted on one day share one set.
+     * GlideRecord, not GlideRecordSecure: the integration user cannot read the row's
+     * sys_import_set field, and these are rows this call has just inserted.
+     */
+    _importSetOf: function(rowIds) {
+        for (var i = 0; i < rowIds.length; i++) {
+            var row = new GlideRecord(this.STAGING_TABLE);
+            if (rowIds[i] && row.get(rowIds[i]) && row.getValue('sys_import_set'))
+                return {
+                    sysId: row.getValue('sys_import_set'),
+                    number: row.getDisplayValue('sys_import_set')
+                };
+        }
+        return {
+            sysId: null,
+            number: null
+        };
     },
     _results: function(rowIds, alerts, logIds) {
         var out = [];
@@ -125,7 +130,8 @@ AlertIngest.prototype = {
         var table = row.getValue('sys_target_table') || '';
         var sysId = row.getValue('sys_target_sys_id') || '';
         if (importState === 'error' || !sysId || !table) {
-            entry.error = row.getValue('sys_import_state_comment') || 'Transform did not produce an incident.';
+            entry.error = row.getValue('sys_import_state_comment') || this._importLogError(rowId) ||
+                'Transform did not produce an incident.';
             this._logResult(logId, entry);
             return entry;
         }
@@ -143,6 +149,21 @@ AlertIngest.prototype = {
         }
         this._logResult(logId, entry);
         return entry;
+    },
+    /**
+     * The platform's own reason for a row it rejected, such as a data policy exception. The
+     * transformer writes it to import_log against the row, not to the row's comment.
+     * GlideRecord, not GlideRecordSecure: import_log is readable only by import_admin, and this
+     * is the log of a row this call has just inserted.
+     */
+    _importLogError: function(rowId) {
+        var log = new GlideRecord('import_log');
+        log.addQuery('import_set_row', rowId);
+        log.addQuery('level', 2);
+        log.orderByDesc('sys_created_on');
+        log.setLimit(1);
+        log.query();
+        return log.next() ? ('' + log.getValue('message')).replace(/\s+/g, ' ').trim() : '';
     },
     _toColumns: function(alert) {
         if (!alert || typeof alert !== 'object' || Array.isArray(alert))
@@ -299,13 +320,13 @@ AlertIngest.prototype = {
         <sys_created_by>saurav.sarkar</sys_created_by>
         <sys_created_on>2026-08-18 15:55:10</sys_created_on>
         <sys_id>207d62592b760b10eb1cfbfdf291bf8f</sys_id>
-        <sys_mod_count>19</sys_mod_count>
+        <sys_mod_count>24</sys_mod_count>
         <sys_name>AlertIngest</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_207d62592b760b10eb1cfbfdf291bf8f</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-12 11:48:16</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 14:19:57</sys_updated_on>
     </sys_script_include>
 </record_update>

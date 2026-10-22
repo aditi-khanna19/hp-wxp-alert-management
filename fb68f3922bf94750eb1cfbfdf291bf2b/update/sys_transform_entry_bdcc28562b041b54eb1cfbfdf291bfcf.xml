@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_transform_entry">
+    <sys_transform_entry action="INSERT_OR_UPDATE">
+        <choice_action>ignore</choice_action>
+        <coalesce>false</coalesce>
+        <coalesce_case_sensitive>false</coalesce_case_sensitive>
+        <coalesce_empty_fields>false</coalesce_empty_fields>
+        <date_format>yyyy-MM-dd HH:mm:ss</date_format>
+        <map display_value="HP WXP Alert to Incident">ccf5939f2b750710eb1cfbfdf291bf79</map>
+        <reference_value_field/>
+        <source_field>[Script]</source_field>
+        <source_script><![CDATA[answer = (function transformEntry(source) {
+
+    // Set with state and close_notes: the 'Make close info mandatory when resolved or closed'
+    // data policy applies to imports. Otherwise keep what the incident has (Copy empty fields is on).
+    if (alertStatus(source.u_status) === 'FIXED')
+        return 'Solution provided';
+    return target.getValue('close_code');
+
+    /** u_status arrives as a stringified {"name":"NEW","value":"New"}; a bare "NEW" also works. */
+    function alertStatus(field) {
+        var raw = ('' + (field || '')).trim();
+        if (!raw)
+            return '';
+        try {
+            var parsed = JSON.parse(raw);
+            return ('' + (parsed.name || parsed.value || '')).toUpperCase();
+        } catch (e) {
+            return raw.toUpperCase();
+        }
+    }
+
+})(source);]]></source_script>
+        <source_table>x_hpws_wrkfrcexpam_hp_alert_inc_import_set</source_table>
+        <sys_class_name>sys_transform_entry</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 12:25:25</sys_created_on>
+        <sys_id>bdcc28562b041b54eb1cfbfdf291bfcf</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>[Script]</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_transform_entry_bdcc28562b041b54eb1cfbfdf291bfcf</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 14:20:36</sys_updated_on>
+        <target_field>close_code</target_field>
+        <target_table>incident</target_table>
+        <use_source_script>true</use_source_script>
+    </sys_transform_entry>
+</record_update>

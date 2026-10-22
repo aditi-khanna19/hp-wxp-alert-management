@@ -12,7 +12,7 @@
         <change_fields>false</change_fields>
         <client_callable>false</client_callable>
         <collection>incident</collection>
-        <condition/>
+        <condition>gs.getSession().getClientData('x_hpws_wrkfrcexpam.inbound_alert') != 'true'</condition>
         <description/>
         <execute_function>false</execute_function>
         <filter_condition table="incident">correlation_display=HP WXP Alert Management^EQ<item endquery="false" field="correlation_display" goto="false" newquery="false" operator="=" or="false" value="HP WXP Alert Management"/>
@@ -31,22 +31,15 @@
         <role_conditions/>
         <script><![CDATA[(function executeRule(current, previous) {
 
-    var eventType = '';
-	gs.info("Lifecycle callback BR triggered");
-    if (current.state.getDisplayValue() == 'Resolved' || current.state.getDisplayValue() == 'Closed'){
-		gs.info('Lifecycle callback incident resolved');
-		new WrkfrcExpAMAlertUtils().sendITSMCallback(current, 'INCIDENT_RESOLVED');
-    }
-	
-	else if (current.assigned_to.changes()){
-		gs.info('Lifecycle callback incident assigned');
-		new WrkfrcExpAMAlertUtils().sendITSMCallback(current, 'INCIDENT_ASSIGNED');
-    }
+    // Work out what changed here, while previous is still available, and leave the Fastn call to
+    // the "HP WXP AM ITSM Callback" Script Action, so this save never waits on Fastn.
+    var eventType = 'INCIDENT_UPDATED';
+    if (current.state == 6 || current.state == 7) // Resolved, Closed
+        eventType = 'INCIDENT_RESOLVED';
+    else if (current.assigned_to.changes())
+        eventType = 'INCIDENT_ASSIGNED';
 
-	else if (current.operation() == 'update'){
-		gs.info('Lifecycle callback incident updated');
-		new WrkfrcExpAMAlertUtils().sendITSMCallback(current, 'INCIDENT_UPDATED');
-	}
+    gs.eventQueue('x_hpws_wrkfrcexpam.itsm.callback', current, eventType, '1');
 })(current, previous);]]></script>
         <sys_class_name>sys_script</sys_class_name>
         <sys_created_by>jessica.braganza</sys_created_by>
@@ -54,15 +47,15 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>188710952babc310eb1cfbfdf291bfc3</sys_id>
-        <sys_mod_count>15</sys_mod_count>
+        <sys_mod_count>17</sys_mod_count>
         <sys_name>HP WXP AM Lifecycle Callback</sys_name>
         <sys_overrides/>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_188710952babc310eb1cfbfdf291bfc3</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-09 12:16:46</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:57:39</sys_updated_on>
         <template/>
         <when>after</when>
     </sys_script>

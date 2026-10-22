@@ -29,7 +29,6 @@
         <role_conditions/>
         <script><![CDATA[(function executeRule(current, previous) {
 
-    gs.info('HP WXP AM: Enforce Single Tenant Active BR FIRED — mod_count: ' + current.sys_mod_count + ' | active: ' + current.active);
 
     var tenantTable = new GlideRecordSecure(current.getTableName());
     tenantTable.setLimit(2); // no unnecessary querying remaining records
@@ -59,15 +58,15 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>d3d37f8bebb2071030f9f95ccad0cd3e</sys_id>
-        <sys_mod_count>2</sys_mod_count>
+        <sys_mod_count>3</sys_mod_count>
         <sys_name>HP WXP AM: Enforce Single Tenant Active</sys_name>
         <sys_overrides/>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_d3d37f8bebb2071030f9f95ccad0cd3e</sys_update_name>
-        <sys_updated_by>jessica.braganza</sys_updated_by>
-        <sys_updated_on>2026-10-12 08:49:03</sys_updated_on>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-22 07:48:14</sys_updated_on>
         <template/>
         <when>before</when>
     </sys_script>

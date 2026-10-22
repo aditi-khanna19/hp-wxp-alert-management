@@ -105,7 +105,7 @@ WrkfrcExpAMCalibrationUtil.prototype = {
             }
 
             // Missing dependencies 
-            if (!baseUrl || !tenantId || !spaceId) {
+            if (!baseUrl || !spaceId) {
                 logWarn('API Status', 'Configured but Missing Required Properties');
                 return;
             }
@@ -128,12 +128,14 @@ WrkfrcExpAMCalibrationUtil.prototype = {
                     input: {}
                 }));
 
-                var response = r.executeAsync();
+                // The admin is waiting for this answer, so a synchronous call with a timeout.
+                r.setHttpTimeout(30000);
+                var response = r.execute();
                 var status = response.getStatusCode();
 
                 if (status >= 200 && status < 300) {
                     logInfo('API Status', 'Configured & Connected');
-                    logInfo('Tenants', 'Connection verified - open Tenant Configuration and click Refresh to load them');
+                    //logInfo('Tenants', 'Connection verified - open Tenant Configuration and click Refresh to load them');
                 } else {
                     logError('API Status', 'Configured but Not Connected (' + status + ')');
                 }
@@ -201,7 +203,7 @@ WrkfrcExpAMCalibrationUtil.prototype = {
             tenantGr.deleteMultiple();
 
 
-            gs.info(LOG + 'AM Tenant table cleared (all records deleted)');
+            //gs.info(LOG + 'AM Tenant table cleared (all records deleted)');
 
 
             return {
@@ -227,13 +229,13 @@ WrkfrcExpAMCalibrationUtil.prototype = {
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-26 08:56:18</sys_created_on>
         <sys_id>b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_id>
-        <sys_mod_count>28</sys_mod_count>
+        <sys_mod_count>31</sys_mod_count>
         <sys_name>WrkfrcExpAMCalibrationUtil</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-12 11:32:50</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:57:40</sys_updated_on>
     </sys_script_include>
 </record_update>

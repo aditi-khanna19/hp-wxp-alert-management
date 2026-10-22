@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="DELETE">
+        <assignable_by/>
+        <can_delegate>true</can_delegate>
+        <description/>
+        <elevated_privilege>false</elevated_privilege>
+        <federated_id/>
+        <grantable>true</grantable>
+        <includes_roles/>
+        <name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</name>
+        <scoped_admin>false</scoped_admin>
+        <suffix>hp_alert_inc_import_set_user</suffix>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-07-03 10:30:35</sys_created_on>
+        <sys_id>290a2c222bf18750eb1cfbfdf291bfa6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_user_role_290a2c222bf18750eb1cfbfdf291bfa6</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-07-03 10:30:35</sys_updated_on>
+    </sys_user_role>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_user_role_290a2c222bf18750eb1cfbfdf291bfa6</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role"><sys_user_role action="INSERT_OR_UPDATE"><assignable_by/><can_delegate>true</can_delegate><description/><elevated_privilege>false</elevated_privilege><federated_id/><grantable>true</grantable><includes_roles/><name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</name><scoped_admin>false</scoped_admin><suffix>hp_alert_inc_import_set_user</suffix><sys_class_name>sys_user_role</sys_class_name><sys_created_by>aditi.khanna</sys_created_by><sys_created_on>2026-07-03 10:30:35</sys_created_on><sys_id>290a2c222bf18750eb1cfbfdf291bfa6</sys_id><sys_mod_count>0</sys_mod_count><sys_name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</sys_name><sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package><sys_policy/><sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope><sys_update_name>sys_user_role_290a2c222bf18750eb1cfbfdf291bfa6</sys_update_name><sys_updated_by>aditi.khanna</sys_updated_by><sys_updated_on>2026-07-03 10:30:35</sys_updated_on></sys_user_role></record_update>]]></payload>
+        <payload_hash>1881197344</payload_hash>
+        <record_name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</record_name>
+        <reverted_from/>
+        <source>0a866c2a2bb18750eb1cfbfdf291bfdb</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-07-03 10:30:36</sys_created_on>
+        <sys_id>a10a6c622bf18750eb1cfbfdf291bf69</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>19f2787c11e0000001</sys_recorded_at>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-07-03 10:30:36</sys_updated_on>
+        <type>Role</type>
+        <update_guid>2d0a6c625bf18750478fd0c825a62167</update_guid>
+        <update_guid_history>2d0a6c625bf18750478fd0c825a62167:1881197344</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete display_value="x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user">c979d0de2b001b54eb1cfbfdf291bfb4</sys_audit_delete>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-10-22 11:01:00</sys_created_on>
+        <sys_db_object display_value="" name="sys_user_role">sys_user_role</sys_db_object>
+        <sys_id>788b442ed795479ca6d47e9d926303c4</sys_id>
+        <sys_metadata>290a2c222bf18750eb1cfbfdf291bfa6</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_hpws_wrkfrcexpam.hp_alert_inc_import_set_user</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_user_role_290a2c222bf18750eb1cfbfdf291bfa6</sys_update_name>
+        <sys_update_version display_value="sys_user_role_290a2c222bf18750eb1cfbfdf291bfa6">a10a6c622bf18750eb1cfbfdf291bf69</sys_update_version>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:01:00</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update table="sys_embedded_help_role">
     <sys_embedded_help_role action="INSERT_OR_UPDATE">
         <order>1000</order>
-        <role display_value="x_hpws_wrkfrcexpam.tenant_list_user" name="x_hpws_wrkfrcexpam.tenant_list_user">4570abe92bbacb10eb1cfbfdf291bf67</role>
+        <role/>
         <sys_class_name>sys_embedded_help_role</sys_class_name>
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-19 14:16:30</sys_created_on>

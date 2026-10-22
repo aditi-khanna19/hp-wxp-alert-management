@@ -12,6 +12,11 @@
         <script><![CDATA[var WrkfrcExpAMAlertUtils = Class.create();
 WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
 
+    CALLBACK_EVENT: 'x_hpws_wrkfrcexpam.itsm.callback',
+    CALLBACK_MAX_ATTEMPTS: 3,
+    CALLBACK_RETRY_MINUTES: [2, 10],
+    HTTP_TIMEOUT_MS: 30000,
+
     getIdentifier: function() {
         return gs.getProperty('x_hpws_wrkfrcexpam.identifier');
     },
@@ -35,24 +40,22 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
     },
 
     callAPI: function(restMessageName, params) {
-        try {
-            var baseURL = this.getBaseURL();
-            if (!baseURL) {
-                throw "Base URL Not found.";
-            }
+        var baseURL = this.getBaseURL();
+        if (!baseURL) {
+            gs.warn("HP WXP Alert Management: Not configured - the Fastn base URL (x_hpws_wrkfrcexpam.fastn_api_baseurl) is empty. Complete the Setup.");
+            return this._notSent("Base URL not found.");
+        }
 
-            // x-fastn-space-tenantid is the connection/context tenant (set by Fastn at
-            // setup) and is REQUIRED. The SELECTED tenants travel in the request body (tenantIds),
-            // built from the active rows of x_hpws_wrkfrcexpam_tenant_list by the callers.
-            var tenants = gs.getProperty("x_hpws_wrkfrcexpam.tenants");
-            if (!tenants || tenants.trim() === '') {
-                gs.warn("HP WXP Alert Management: Not configured - the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Complete the Setup.");
-                return {
-                    "success": false,
-                    "statusCode": 0,
-                    "responseBody": "Connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Integration cannot proceed."
-                };
-            }
+        // x-fastn-space-tenantid is the connection/context tenant (set by Fastn at
+        // setup) and is REQUIRED. The SELECTED tenants travel in the request body (tenantIds),
+        // built from the active rows of x_hpws_wrkfrcexpam_tenant_list by the callers.
+        var tenants = gs.getProperty("x_hpws_wrkfrcexpam.tenants");
+        if (!tenants || tenants.trim() === '') {
+            gs.warn("HP WXP Alert Management: Not configured - the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Complete the Setup.");
+            return this._notSent("Connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Integration cannot proceed.");
+        }
+
+        try {
             var r = new sn_ws.RESTMessageV2('HP WXP Alert Management', restMessageName);
             r.setRequestHeader("Content-Type", "application/json");
             r.setRequestHeader("x-fastn-space-id", gs.getProperty("x_hpws_wrkfrcexpam.fastn.space.id"));
@@ -64,49 +67,35 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
                 r.setStringParameterNoEscape(param, params[param]);
             }
 
-            var responseBody = '';
-            var httpStatus = '';
-            for (var i = 0; i < 3; i++) {
-                var response = r.executeAsync();
-                response.waitForResponse(60);
-                responseBody = response.getBody();
-                httpStatus = response.getStatusCode();
-                if (httpStatus > 199 && httpStatus < 300)
-                    break;
-            }
-            if (httpStatus > 199 && httpStatus < 300) {
-                return {
-                    "success": true,
-                    "statusCode": httpStatus,
-                    "responseBody": responseBody
-                };
-
-            } else {
-                // A 404 or other 4xx means Fastn does not know the alert. That is a data case, not a communication failure.
-                var statusNum = parseInt(httpStatus, 10);
-                var isCommunicationFailure = !statusNum || statusNum === 401 || statusNum === 403 || statusNum >= 500;
-                if (isCommunicationFailure) {
-                    gs.error("HP WXP Alert Management integration failure - restMessage: " + restMessageName + ", httpStatus: " + httpStatus + ", responseBody: " + responseBody);
-                    var rec = gs.getProperty("x_hpws_wrkfrcexpam.notify_failure_group");
-                    gs.eventQueue("x_hpws_wrkfrcexpam.hp.failure.notify", (typeof current !== 'undefined') ? current : null, rec, responseBody + "||" + httpStatus);
-                } else {
-                    gs.warn("HP WXP Alert Management request rejected by Fastn - restMessage: " + restMessageName + ", httpStatus: " + httpStatus + ", responseBody: " + responseBody);
-                }
-                throw {
-                    "success": false,
-                    "statusCode": httpStatus,
-                    "responseBody": responseBody
-                };
-            }
-        } catch (error) {
-            if (typeof error === "object" && error !== null) {
-                gs.info("HP WXP Alert Management REST Error - Success: " + error.success + ", Status Code: " + error.statusCode + ", Response Body: " + error.responseBody);
-                return error;
-            } else {
-                gs.info("HP WXP Alert Management REST Error - " + error);
-                return error;
-            }
+            // One synchronous call with a timeout. The callback runs it from a Script Action,
+            // outside the incident's transaction, so no user or inbound request waits on Fastn.
+            r.setHttpTimeout(this.HTTP_TIMEOUT_MS);
+            var response = r.execute();
+            var httpStatus = parseInt(response.getStatusCode(), 10) || 0;
+            return {
+                "success": httpStatus > 199 && httpStatus < 300,
+                "statusCode": httpStatus,
+                "responseBody": response.getBody(),
+                "retryable": httpStatus === 0 || httpStatus >= 500
+            };
+        } catch (e) {
+            return {
+                "success": false,
+                "statusCode": 0,
+                "responseBody": '' + e,
+                "retryable": true
+            };
         }
+    },
+
+    _notSent: function(reason) {
+        return {
+            "success": false,
+            "statusCode": 0,
+            "responseBody": reason,
+            "retryable": false,
+            "notSent": true
+        };
     },
 
     _getAlertDetails: function(incidentGR) {
@@ -172,12 +161,42 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
 
         var payload = this.buildITSMCallbackPayload(incidentGR, eventType);
 
-        gs.info("HP WXP Callback : " + eventType + " : " + incidentGR.number);
-        gs.info("HP WXP Callback Payload : " + JSON.stringify(payload));
-
         return this.callAPI('ITSM Callback', {
             payload: JSON.stringify(payload)
         });
+    },
+
+    /**
+     * Called by the "HP WXP AM ITSM Callback" Script Action, never inside the incident's own save.
+     * Retries only when Fastn gave no answer or a 5xx, by scheduling the event again; after the last
+     * attempt, or on 401/403, it raises the integration failure event as before.
+     */
+    deliverITSMCallback: function(incidentGR, eventType, attempt) {
+        if (!incidentGR || !incidentGR.isValidRecord())
+            return;
+
+        var result = this.sendITSMCallback(incidentGR, eventType);
+        if (result.success || result.notSent)
+            return;
+
+        if (result.retryable && attempt < this.CALLBACK_MAX_ATTEMPTS) {
+            var when = new GlideDateTime();
+            when.addSeconds(60 * this.CALLBACK_RETRY_MINUTES[attempt - 1]);
+            gs.eventQueueScheduled(this.CALLBACK_EVENT, incidentGR, eventType, '' + (attempt + 1), when);
+            return;
+        }
+
+        var status = result.statusCode;
+        var detail = "restMessage: ITSM Callback, event: " + eventType + ", incident: " + incidentGR.getValue('number') +
+            ", attempt: " + attempt + ", httpStatus: " + status + ", responseBody: " + result.responseBody;
+        // A 404 or other 4xx means Fastn does not know the alert. That is a data case, not a communication failure.
+        if (!status || status === 401 || status === 403 || status >= 500) {
+            gs.error("HP WXP Alert Management integration failure - " + detail);
+            gs.eventQueue("x_hpws_wrkfrcexpam.hp.failure.notify", incidentGR,
+                gs.getProperty("x_hpws_wrkfrcexpam.notify_failure_group"), result.responseBody + "||" + status);
+        } else {
+            gs.warn("HP WXP Alert Management request rejected by Fastn - " + detail);
+        }
     },
 
     type: 'WrkfrcExpAMAlertUtils'
@@ -186,13 +205,13 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-19 13:41:18</sys_created_on>
         <sys_id>e79553a92b3acb10eb1cfbfdf291bf0f</sys_id>
-        <sys_mod_count>25</sys_mod_count>
+        <sys_mod_count>26</sys_mod_count>
         <sys_name>WrkfrcExpAMAlertUtils</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_e79553a92b3acb10eb1cfbfdf291bf0f</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-12 08:29:45</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:57:38</sys_updated_on>
     </sys_script_include>
 </record_update>

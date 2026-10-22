@@ -6,7 +6,7 @@
     var c = this;
 
     c.properties = [];
-    c.selectedTenants = [];
+    //c.selectedTenants = [];
 
     c.$onInit = function() {
 
@@ -15,7 +15,7 @@
         }).then(function(response) {
 
             c.properties = response.data.properties || [];
-            c.selectedTenants = response.data.selectedTenants || [];
+            //c.selectedTenants = response.data.selectedTenants || [];
 
         });
 
@@ -166,8 +166,8 @@
         "x_hpws_wrkfrcexpam.api.fastn.api.key",
         "x_hpws_wrkfrcexpam.fastn.space.id",
         "x_hpws_wrkfrcexpam.fastn_api_baseurl",
-        "x_hpws_wrkfrcexpam.tenants",
-        "x_hpws_wrkfrcexpam.tenant.type"
+        //"x_hpws_wrkfrcexpam.tenants",
+       // "x_hpws_wrkfrcexpam.tenant.type"
     ];
 
     if (action == "loadProperties") {
@@ -199,20 +199,20 @@
         });
 
         // Selected tenants come straight from the Tenant List (active rows).
-        data.selectedTenants = [];
+       // data.selectedTenants = [];
 
-        var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
-        tenantGr.addQuery('active', true);
-        tenantGr.orderBy('tenant');
-        tenantGr.query();
+    //     var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
+    //     tenantGr.addQuery('active', true);
+    //     tenantGr.orderBy('tenant');
+    //     tenantGr.query();
 
-        while (tenantGr.next()) {
-            data.selectedTenants.push({
-                tenant: tenantGr.getValue('tenant'),
-                tenantid: tenantGr.getValue('tenantid')
-            });
-        }
-    }
+    //     while (tenantGr.next()) {
+    //         data.selectedTenants.push({
+    //             tenant: tenantGr.getValue('tenant'),
+    //             tenantid: tenantGr.getValue('tenantid')
+    //         });
+    //     }
+     }
 
     if (action == "saveProperties") {
 
@@ -232,14 +232,14 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-24 12:18:58</sys_created_on>
         <sys_id>0c857097ebfe071030f9f95ccad0cd71</sys_id>
-        <sys_mod_count>40</sys_mod_count>
+        <sys_mod_count>43</sys_mod_count>
         <sys_name>HP WXP AM Setup Connection</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sp_widget_0c857097ebfe071030f9f95ccad0cd71</sys_update_name>
         <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-12 11:01:07</sys_updated_on>
+        <sys_updated_on>2026-10-22 10:55:55</sys_updated_on>
         <template><![CDATA[<!-- Setup Connection -->
 <div class="am-card">
 

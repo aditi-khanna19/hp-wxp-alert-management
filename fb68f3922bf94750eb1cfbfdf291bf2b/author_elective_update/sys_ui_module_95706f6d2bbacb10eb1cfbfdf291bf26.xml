@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_module">
+    <sys_ui_module action="DELETE">
+        <active>true</active>
+        <application/>
+        <filter/>
+        <name>Tenant Lists</name>
+        <order/>
+        <path/>
+        <path_relative_to_root>false</path_relative_to_root>
+        <roles>x_hpws_wrkfrcexpam.tenant_list_user</roles>
+        <sys_class_name>sys_ui_module</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-19 14:16:31</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>95706f6d2bbacb10eb1cfbfdf291bf26</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Tenant Lists</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_ui_module_95706f6d2bbacb10eb1cfbfdf291bf26</sys_update_name>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-08-19 14:16:31</sys_updated_on>
+        <table>x_hpws_wrkfrcexpam_tenant_list</table>
+        <uncancelable>false</uncancelable>
+        <view_name/>
+    </sys_ui_module>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_ui_module_95706f6d2bbacb10eb1cfbfdf291bf26</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_module"><sys_ui_module action="INSERT_OR_UPDATE"><active>true</active><application/><filter/><name>Tenant Lists</name><order/><path/><path_relative_to_root>false</path_relative_to_root><roles>x_hpws_wrkfrcexpam.tenant_list_user</roles><sys_class_name>sys_ui_module</sys_class_name><sys_created_by>jessica.braganza</sys_created_by><sys_created_on>2026-08-19 14:16:31</sys_created_on><sys_domain>global</sys_domain><sys_domain_path>/</sys_domain_path><sys_id>95706f6d2bbacb10eb1cfbfdf291bf26</sys_id><sys_mod_count>0</sys_mod_count><sys_name>Tenant Lists</sys_name><sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package><sys_policy/><sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope><sys_update_name>sys_ui_module_95706f6d2bbacb10eb1cfbfdf291bf26</sys_update_name><sys_updated_by>jessica.braganza</sys_updated_by><sys_updated_on>2026-08-19 14:16:31</sys_updated_on><table>x_hpws_wrkfrcexpam_tenant_list</table><uncancelable>false</uncancelable><view_name/></sys_ui_module></record_update>]]></payload>
+        <payload_hash>-46396361</payload_hash>
+        <record_name>Tenant Lists</record_name>
+        <reverted_from/>
+        <source>047833962bf94750eb1cfbfdf291bf41</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-19 14:16:31</sys_created_on>
+        <sys_id>5d706f6d2bbacb10eb1cfbfdf291bf2b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a01a617b4d0000001</sys_recorded_at>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-08-19 14:16:31</sys_updated_on>
+        <type>Module</type>
+        <update_guid>19706f6d5fbacb1013d720fb98d6802a</update_guid>
+        <update_guid_history>19706f6d5fbacb1013d720fb98d6802a:-46396361</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-10-22 07:44:24</sys_created_on>
+        <sys_db_object display_value="" name="sys_ui_module">sys_ui_module</sys_db_object>
+        <sys_id>6132068907b9470291ff8bf994167c24</sys_id>
+        <sys_metadata>95706f6d2bbacb10eb1cfbfdf291bf26</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Tenant Lists</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_ui_module_95706f6d2bbacb10eb1cfbfdf291bf26</sys_update_name>
+        <sys_update_version display_value="sys_ui_module_95706f6d2bbacb10eb1cfbfdf291bf26">5d706f6d2bbacb10eb1cfbfdf291bf2b</sys_update_version>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-10-22 07:44:24</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>
