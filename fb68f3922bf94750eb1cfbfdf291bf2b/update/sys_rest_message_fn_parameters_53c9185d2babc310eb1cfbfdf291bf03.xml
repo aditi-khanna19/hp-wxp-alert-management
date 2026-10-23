@@ -6,35 +6,15 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-09-24 11:57:11</sys_created_on>
         <sys_id>53c9185d2babc310eb1cfbfdf291bf03</sys_id>
-        <sys_mod_count>10</sys_mod_count>
+        <sys_mod_count>11</sys_mod_count>
         <sys_name>payload</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_rest_message_fn_parameters_53c9185d2babc310eb1cfbfdf291bf03</sys_update_name>
-        <sys_updated_by>jessica.braganza</sys_updated_by>
-        <sys_updated_on>2026-10-06 15:49:15</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-23 13:42:03</sys_updated_on>
         <type>string</type>
-        <value>{
-  "input": {
-    "result": {
-      "eventType": "INCIDENT_CREATED",
-      "schemaVersion": "1.0",
-      "tenantId": "7ec23fcf-0921-4fdf-b7b8-1d7c8f6d2390",
-      "alertRuleId": "POSTMAN-TEST-RULE",
-      "fleetAlertId": null,
-      "deviceAlertId": "POSTMAN-TEST-DEVICE-009",
-      "itsmType": "SERVICENOW",
-      "incidentId": "f881ebcfeba3475030f9f95ccad0cd99",
-      "displayId": "INC0010283",
-      "newState": "New",
-      "assignedTo": null,
-      "resolvedAt": null,
-      "comments": null,
-      "processedAt": "2026-09-30T12:59:11Z",
-      "error": null
-    }
-  }
-}</value>
+        <value/>
     </sys_rest_message_fn_parameters>
 </record_update>

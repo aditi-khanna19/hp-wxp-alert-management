@@ -9,6 +9,17 @@
         <name>Post alerts</name>
         <operation_script><![CDATA[(function process(request, response) {
 
+    // Debug log of the call, written only when x_hpws_wrkfrcexpam.logging.verbosity is 'debug'.
+    // The body can be read only once, so it is taken as text here and parsed below.
+    var debug = new AlertApiDebug('POST /alerts');
+    var raw = '';
+    try {
+        raw = request.body.dataString || '';
+    } catch (e) {
+        raw = '';
+    }
+    debug.request(request, raw);
+
     // Authorisation. 'Requires ACL authorization' plus the rest_endpoint ACL is the primary
     // control; this guard is deliberate belt-and-braces, because an ACL can be deactivated
     // on a customer instance and the endpoint would silently reopen. Confirmed 31 Aug 2026
@@ -24,9 +35,12 @@
         return fail(403, 'Forbidden.');
     }
 
+    if (!raw)
+        return fail(400, 'Send a JSON body containing an "alerts" array.');
+
     var body;
     try {
-        body = request.body.data;
+        body = JSON.parse(raw);
     } catch (e) {
         return fail(400, 'Body is not valid JSON.');
     }
@@ -37,7 +51,7 @@
     // The envelope is { "alerts": [...] }; a bare array is accepted too.
     var alerts = Array.isArray(body) ? body : body.alerts;
 
-    var outcome = new AlertIngest().importBatch(alerts);
+    var outcome = new AlertIngest().importBatch(alerts, debug.callId);
     if (!outcome.ok) {
         var errorBody = { error: outcome.error };
         if (outcome.missingFields)
@@ -45,18 +59,22 @@
         if (outcome.alertIndex !== undefined && outcome.alertIndex !== null)
             errorBody.alertIndex = outcome.alertIndex;
         response.setStatus(outcome.status);
+        debug.response(outcome.status, errorBody);
         return errorBody;
     }
 
-    return {
+    var result = {
         import_set: outcome.import_set,
         import_set_id: outcome.import_set_id,
         staging_table: outcome.staging_table,
         batch_size: outcome.batch_size,
         incidents: outcome.incidents
     };
+    debug.response(200, result);
+    return result;
 
     function fail(status, message) {
+        debug.response(status, message);
         var error = new sn_ws_err.ServiceError();
         error.setStatus(status);
         error.setMessage(message);
@@ -100,14 +118,14 @@
         <sys_created_by>saurav.sarkar</sys_created_by>
         <sys_created_on>2026-08-18 15:56:22</sys_created_on>
         <sys_id>cebdee592b760b10eb1cfbfdf291bf0b</sys_id>
-        <sys_mod_count>11</sys_mod_count>
+        <sys_mod_count>13</sys_mod_count>
         <sys_name>Post alerts</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_ws_operation_cebdee592b760b10eb1cfbfdf291bf0b</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-09 13:00:43</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 17:44:01</sys_updated_on>
         <web_service_definition display_value="HP WXP Alerts">d69d6a592b760b10eb1cfbfdf291bf07</web_service_definition>
         <web_service_version/>
     </sys_ws_operation>

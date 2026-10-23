@@ -491,7 +491,7 @@
         <script><![CDATA[(function() {
 
     data.status = 'not_connected';
-    data.message = 'WXP is not connected.';
+    data.message = 'Connection settings are incomplete.';
     data.redirectUrl = 'https://workforceexperience.hp.com/ui/view/integrations';
     data.checks = [];
     data.tenantTable = [];
@@ -501,18 +501,10 @@
         return key.substring(0, 4) + '****' + key.slice(-2);
     }
 
-    function getStatusLabel(status) {
-        if (status == 200) return 'Success';
-        if (status == 401) return 'Unauthorized';
-        if (status == 403) return 'Forbidden';
-        return 'Error';
-    }
-
     try {
 
         var apiKey = gs.getProperty('x_hpws_wrkfrcexpam.api.fastn.api.key');
         var baseUrl = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
-        var tenantId = gs.getProperty('x_hpws_wrkfrcexpam.tenants');
         var spaceId = gs.getProperty('x_hpws_wrkfrcexpam.fastn.space.id');
 
         // ✅ BASIC CHECKS
@@ -540,92 +532,11 @@
         }
         data.checks.push({ name: 'Space ID', status: true, message: spaceId });
 
-        // ✅ API CALL
-        var endpoint = baseUrl + '/api/v1/getTenantsChildren';
-
-        var r = new sn_ws.RESTMessageV2();	//'HP  WXP Alert Management','Get Customers of Partner'
-        r.setEndpoint(endpoint);
-        r.setHttpMethod('POST');
-
-        r.setRequestHeader('Content-Type', 'application/json');
-        r.setRequestHeader('fastn-space-id', spaceId);
-        r.setRequestHeader('x-fastn-api-key', apiKey);
-        r.setRequestHeader('x-fastn-space-tenantid', tenantId);
-
-        r.setRequestBody(JSON.stringify({ input: {} }));
-
-        var response = r.execute();
-        var status = response.getStatusCode();
-        var body = response.getBody();
-
-        var success = status >= 200 && status < 300;
-
-        data.checks.push({
-            name: 'API Connection',
-            status: success,
-            code: status,
-            message: getStatusLabel(status),
-            debug:
-                "Endpoint: " + endpoint +
-                "\nStatus: " + status +
-                "\nResponse: " + (body || 'No response')
-        });
-
-        if (!success) {
-            data.message = 'API Authentication failed';
-            return;
-        }
-
-        // ✅ TENANT TABLE
-        var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
-        tenantGr.query();
-
-        var tenantValid = false;
-        var activeCount = 0;
-
-        // if (!tenantGr.hasNext()) {
-
-        //     data.checks.push({
-        //         name: 'Tenant Validation',
-        //         status: false,
-        //         message: 'No records found for this tenant'
-        //     });
-
-        //     data.message = 'Tenant validation failed';
-        //     return;
-        // }
-
-        // while (tenantGr.next()) {
-
- //     var activeRaw = tenantGr.getValue('active');
- //     var isActive = (activeRaw == '1' || activeRaw == 'true');
-        //     data.tenantTable.push({
-        //         tenant: tenantGr.getDisplayValue('tenantid'),
-        //         name: tenantGr.getDisplayValue('tenant'),
-        //         active: tenantGr.getDisplayValue('active')
-        //     });
-
-        //     if (isActive) {
-        //         tenantValid = true;
-        //         activeCount++;
-        //     }
-        // }
-
-        // data.checks.push({
-        //     name: 'Tenant Validation',
-        //     status: tenantValid,
-        //     message: tenantValid ?
-        //         'Valid tenant configuration found (' + activeCount + ' active record(s))' :
-        //         'Records found but no active tenants'
-        // });
-
-        // if (!tenantValid) {
-        //     data.message = 'Tenant validation failed';
-        //     return;
-        // }
-
-        data.status = 'connected';
-        data.message = 'Connected to WXP';
+        // The live connection test is off in this version. The only Fastn call available for
+        // it (getTenantsChildren) needs a tenant ID, which setup no longer asks for; a
+        // tenant-free check returns in v2. Until then this card checks the settings only.
+        data.status = 'configured';
+        data.message = 'Connection settings are complete.';
 
     } catch (e) {
 
@@ -645,14 +556,14 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-20 13:32:40</sys_created_on>
         <sys_id>851f148e2b72cf10eb1cfbfdf291bf9c</sys_id>
-        <sys_mod_count>15</sys_mod_count>
+        <sys_mod_count>16</sys_mod_count>
         <sys_name>HP WXP AM Status</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sp_widget_851f148e2b72cf10eb1cfbfdf291bf9c</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-22 10:36:59</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-23 13:25:21</sys_updated_on>
         <template><![CDATA[<div class="hp-connection-widget panel panel-default">
 
     <div class="panel-heading header-flex">
@@ -665,7 +576,7 @@
     </div>
 
     <div class="panel-body">
-      <p class="mapping-subtitle">Validates your API connection and credentials with HP Workforce Experience Platform.</p>
+      <p class="mapping-subtitle">Checks that the connection settings for HP Workforce Experience Platform are complete.</p>
 
         <!-- ✅ TOAST -->
         <div class="toast" ng-if="showToast">✅ Copied</div>
@@ -812,7 +723,7 @@
         <!-- ✅ FINAL -->
         <div class="result text-center"
              ng-if="showFinal"
-             ng-class="data.status=='connected' ? 'pass' : 'fail'">
+             ng-class="(data.status=='connected' || data.status=='configured') ? 'pass' : 'fail'">
             {{data.message}}
         </div>
 

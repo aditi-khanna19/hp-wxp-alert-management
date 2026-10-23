@@ -39,16 +39,16 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
         return instance_name;
     },
 
-    callAPI: function(restMessageName, params) {
+    callAPI: function(restMessageName, params, tenantId) {
         var baseURL = this.getBaseURL();
         if (!baseURL) {
             gs.warn("HP WXP Alert Management: Not configured - the Fastn base URL (x_hpws_wrkfrcexpam.fastn_api_baseurl) is empty. Complete the Setup.");
             return this._notSent("Base URL not found.");
         }
 
-        // x-fastn-space-tenantid is the connection/context tenant (set by Fastn at
-        // setup) and is REQUIRED. The SELECTED tenants travel in the request body (tenantIds),
-        // built from the active rows of x_hpws_wrkfrcexpam_tenant_list by the callers.
+        // x-fastn-space-tenantid names the tenant the call is for: the caller's tenantId when the
+        // call acts for one alert, otherwise the connection tenant set at setup. The connection
+        // tenant must be set either way - when it is empty, Setup is not complete.
         var tenants = gs.getProperty("x_hpws_wrkfrcexpam.tenants");
         if (!tenants || tenants.trim() === '') {
             gs.warn("HP WXP Alert Management: Not configured - the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty. Complete the Setup.");
@@ -61,7 +61,7 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
             r.setRequestHeader("x-fastn-space-id", gs.getProperty("x_hpws_wrkfrcexpam.fastn.space.id"));
             r.setRequestHeader("stage", "LIVE");
             r.setRequestHeader("x-fastn-api-key", gs.getProperty("x_hpws_wrkfrcexpam.api.fastn.api.key"));
-            r.setRequestHeader("x-fastn-space-tenantid", tenants);
+            r.setRequestHeader("x-fastn-space-tenantid", tenantId || tenants);
             r.setStringParameterNoEscape('base_url', baseURL);
             for (var param in params) {
                 r.setStringParameterNoEscape(param, params[param]);
@@ -107,24 +107,21 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
             deviceAlertId: null
         };
 
+        // The log row of the alert that created or last updated this incident. tenant_id is the
+        // tenant the alert itself named. The connection tenant stands in when the alert named none
+        // or the incident has no log row (incidents created before the log recorded the tenant).
         var logGR = new GlideRecordSecure('x_hpws_wrkfrcexpam_incoming_alert_log');
-        logGR.addQuery('alert_data', 'CONTAINS', incidentGR.correlation_id + '');
+        logGR.addQuery('incident', incidentGR.getUniqueValue());
         logGR.orderByDesc('sys_created_on');
         logGR.setLimit(1);
         logGR.query();
-
         if (logGR.next()) {
-            try {
-                var data = JSON.parse(logGR.getValue('alert_data'));
-
-                result.tenantId = data.tenantId || null;
-                result.alertRuleId = data.alertRuleId || null;
-                result.fleetAlertId = data.fleetAlertId || null;
-                result.deviceAlertId = data.deviceAlertId || null;
-            } catch (e) {
-                gs.error('HP WXP Callback - Failed to parse incoming alert log: ' + e);
-            }
+            result.tenantId = logGR.getValue('tenant_id') || null;
+            result.alertRuleId = logGR.getValue('alert_rule_id') || null;
+            result.fleetAlertId = logGR.getValue('fleet_alert_id') || null;
+            result.deviceAlertId = logGR.getValue('device_alert_id') || null;
         }
+        result.tenantId = result.tenantId || gs.getProperty('x_hpws_wrkfrcexpam.tenants') || null;
 
         return result;
     },
@@ -161,9 +158,10 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
 
         var payload = this.buildITSMCallbackPayload(incidentGR, eventType);
 
+        // The header names the same tenant as the body: the one the incident's alert came from.
         return this.callAPI('ITSM Callback', {
             payload: JSON.stringify(payload)
-        });
+        }, payload.input.result.tenantId);
     },
 
     /**
@@ -205,13 +203,13 @@ WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProces
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-19 13:41:18</sys_created_on>
         <sys_id>e79553a92b3acb10eb1cfbfdf291bf0f</sys_id>
-        <sys_mod_count>26</sys_mod_count>
+        <sys_mod_count>29</sys_mod_count>
         <sys_name>WrkfrcExpAMAlertUtils</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_e79553a92b3acb10eb1cfbfdf291bf0f</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-10-22 11:57:38</sys_updated_on>
+        <sys_updated_on>2026-10-22 18:52:02</sys_updated_on>
     </sys_script_include>
 </record_update>

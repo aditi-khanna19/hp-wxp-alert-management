@@ -10,61 +10,8 @@
         <source_field>[Script]</source_field>
         <source_script><![CDATA[answer = (function transformEntry(source) {
 
-    var company = JSON.parse(source.u_companydetails || '{}');
-    var device = JSON.parse(source.u_devicedetails || '{}');
-
-    // Only the lines that carry a value are written, so a sparse alert does not produce
-    // a work note full of empty labels.
-    var lines = [
-        ['Company Name', company.companyName],
-        ['Device Name', device.deviceName],
-        ['Serial Number', device.serialNumber],
-        ['Device Model', device.deviceModel],
-        ['Alert Type', label(source.u_type)],
-        ['Alert Subtype', label(source.u_subtype)],
-        ['Alert Status', label(source.u_status)],
-        ['Source Location', '' + source.u_sourcelocation],
-        ['Alert Rule', '' + source.u_alertruleid],
-        ['Occurred At', stamp(source.u_occuredat)]
-    ];
-
-    var out = [];
-    for (var i = 0; i < lines.length; i++) {
-        if (lines[i][1])
-            out.push(lines[i][0] + ': ' + lines[i][1]);
-    }
-    return out.join('\n');
-
-    /** type/subtype/status arrive as stringified {"name":...,"value":...} - show the label. */
-    function label(field) {
-        var raw = ('' + (field || '')).trim();
-        if (!raw)
-            return '';
-        try {
-            var parsed = JSON.parse(raw);
-            return parsed.value || parsed.name || raw;
-        } catch (e) {
-            return raw;
-        }
-    }
-
-    /**
-     * WXP sends epoch milliseconds as a string.
-     *
-     * getValue(), not getDisplayValue(). GlideDateTime holds its value in UTC and
-     * getDisplayValue() renders it in the *session user's* timezone - so the same alert
-     * produced 01:24 when imported as incidentConnect and 23:24 as saurav.sarkar, and the
-     * work note froze whichever one happened to run. The zone is labelled because an
-     * unmarked timestamp cannot even be corrected for by a reader.
-     */
-    function stamp(millis) {
-        var value = Number('' + (millis || ''));
-        if (!value)
-            return '';
-        var when = new GlideDateTime();
-        when.setNumericValue(value);
-        return when.getValue() + ' UTC';
-    }
+    // Built by AlertIngest.alertDetails(), which the description field map also uses.
+    return new AlertIngest().alertDetails(source);
 
 })(source);]]></source_script>
         <source_table>x_hpws_wrkfrcexpam_hp_alert_inc_import_set</source_table>
@@ -72,14 +19,14 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-07-06 08:20:55</sys_created_on>
         <sys_id>4098e39b2b390710eb1cfbfdf291bfca</sys_id>
-        <sys_mod_count>5</sys_mod_count>
+        <sys_mod_count>6</sys_mod_count>
         <sys_name>[Script]</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_transform_entry_4098e39b2b390710eb1cfbfdf291bfca</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-09-01 12:08:06</sys_updated_on>
+        <sys_updated_on>2026-10-22 18:29:28</sys_updated_on>
         <target_field>work_notes</target_field>
         <target_table>incident</target_table>
         <use_source_script>true</use_source_script>

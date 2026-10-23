@@ -6,31 +6,41 @@
         <coalesce_empty_fields>false</coalesce_empty_fields>
         <date_format>yyyy-MM-dd HH:mm:ss</date_format>
         <map display_value="HP WXP Alert to Incident">ccf5939f2b750710eb1cfbfdf291bf79</map>
-        <reference_value_field>serial_number</reference_value_field>
+        <reference_value_field>sys_id</reference_value_field>
         <source_field>[Script]</source_field>
         <source_script><![CDATA[answer = (function transformEntry(source) {
 
-    // Return the serial, not a sys_id. 'Referenced value field name' on this map is set to
-    // serial_number, so the platform matches this value against cmdb_ci.serial_number itself.
-    // Returning a sys_id instead makes the transformer fall back to display-value matching,
-    // which silently drops any CI that has no name.
-    var device = JSON.parse(source.u_devicedetails || '{}');
-    return device.serialNumber || '';
+    // Set when the incident is created only. A re-post keeps the CI the incident has: an agent
+    // may have corrected it, and with Copy empty fields on, returning nothing here would blank it.
+    if (action == 'update')
+        return target.getValue('cmdb_ci');
 
-})(source);]]></source_script>
+    // The device's CI, matched on serial number. 'Referenced value field name' on this map is
+    // sys_id, so the platform takes the returned value as is.
+    var device = JSON.parse(source.getValue('u_devicedetails') || '{}');
+    if (!device.serialNumber)
+        return '';
+    var ci = new GlideRecord('cmdb_ci');
+    ci.addQuery('serial_number', device.serialNumber);
+    ci.setLimit(1);
+    ci.query();
+    return ci.next() ? ci.getUniqueValue() : '';
+
+})(source);
+]]></source_script>
         <source_table>x_hpws_wrkfrcexpam_hp_alert_inc_import_set</source_table>
         <sys_class_name>sys_transform_entry</sys_class_name>
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-07-06 08:12:41</sys_created_on>
         <sys_id>4b86ab972b390710eb1cfbfdf291bf95</sys_id>
-        <sys_mod_count>3</sys_mod_count>
+        <sys_mod_count>4</sys_mod_count>
         <sys_name>[Script]</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_transform_entry_4b86ab972b390710eb1cfbfdf291bf95</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-09-01 07:05:42</sys_updated_on>
+        <sys_updated_on>2026-10-22 18:40:44</sys_updated_on>
         <target_field>cmdb_ci</target_field>
         <target_table>incident</target_table>
         <use_source_script>true</use_source_script>

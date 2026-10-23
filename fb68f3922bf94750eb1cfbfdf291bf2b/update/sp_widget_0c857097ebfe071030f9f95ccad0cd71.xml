@@ -9,6 +9,10 @@
     //c.selectedTenants = [];
 
     c.$onInit = function() {
+        c.loadProperties();
+    };
+
+    c.loadProperties = function() {
 
         c.server.get({
             action: "loadProperties"
@@ -35,6 +39,8 @@
             properties: c.properties
         }).then(function() {
 
+            // Reload, so a key just typed is cleared from the page and shown as saved.
+            c.loadProperties();
             c.showSuccess = true;
 
             $timeout(function() {
@@ -179,6 +185,7 @@
             var propertyGr = new GlideRecordSecure('sys_properties');
             var description = '';
             var propSysId = '';
+            var secret = false;
 
             propertyGr.addQuery('name', propName);
             propertyGr.setLimit(1);
@@ -187,13 +194,18 @@
             if (propertyGr.next()) {
                 description = propertyGr.getValue('description') || '';
                 propSysId = propertyGr.getUniqueValue();
+                secret = isSecret(propertyGr.getValue('type'));
             }
 
+            // A password-type value never leaves the server: the screen is only told whether
+            // one is set, and a new value can be typed over it.
             data.properties.push({
                 name: propName,
                 description: description,
                 sys_id: propSysId,
-                value: gs.getProperty(propName, '')
+                secret: secret,
+                isSet: !!gs.getProperty(propName, ''),
+                value: secret ? '' : gs.getProperty(propName, '')
             });
 
         });
@@ -221,9 +233,22 @@
             // Ignore any name that is not one of the setup settings.
             if (propertyNames.indexOf(prop.name) === -1) return;
 
+            // A password-type setting left blank keeps its saved value: the screen never
+            // receives it, so a blank box means "unchanged", not "clear it".
+            if (!prop.value && isSecret(propertyType(prop.name))) return;
+
             gs.setProperty(prop.name, prop.value || '');
         });
 
+    }
+
+    function isSecret(type) {
+        return type == 'password' || type == 'password2';
+    }
+
+    function propertyType(propName) {
+        var propertyGr = new GlideRecordSecure('sys_properties');
+        return propertyGr.get('name', propName) ? propertyGr.getValue('type') : '';
     }
 
 })();]]></script>
@@ -232,14 +257,14 @@
         <sys_created_by>jessica.braganza</sys_created_by>
         <sys_created_on>2026-08-24 12:18:58</sys_created_on>
         <sys_id>0c857097ebfe071030f9f95ccad0cd71</sys_id>
-        <sys_mod_count>43</sys_mod_count>
+        <sys_mod_count>44</sys_mod_count>
         <sys_name>HP WXP AM Setup Connection</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sp_widget_0c857097ebfe071030f9f95ccad0cd71</sys_update_name>
-        <sys_updated_by>aditi.khanna</sys_updated_by>
-        <sys_updated_on>2026-10-22 10:55:55</sys_updated_on>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 20:49:00</sys_updated_on>
         <template><![CDATA[<!-- Setup Connection -->
 <div class="am-card">
 
@@ -282,9 +307,18 @@
             <!-- Property Value -->
             <div class="col-sm-6 am-field">
 
-                <input type="text"
+                <input ng-if="!prop.secret"
+                       type="text"
                        class="form-control"
                        ng-model="prop.value">
+
+                <!-- Password-type settings: never shown, only replaced -->
+                <input ng-if="prop.secret"
+                       type="password"
+                       class="form-control"
+                       autocomplete="new-password"
+                       ng-model="prop.value"
+                       placeholder="{{prop.isSet ? 'Saved - enter a new value to replace it' : 'Not set - enter a value'}}">
 
             </div>
 

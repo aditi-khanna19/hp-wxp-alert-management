@@ -23,7 +23,7 @@ AlertIngest.prototype = {
     // (creating one when none is Loading) and runs the transform map as soon as the row is
     // inserted, so the row comes back with sys_target_sys_id set. No sys_import_set record is
     // created here and GlideImportSetTransformer is not called.
-    importBatch: function(alerts) {
+    importBatch: function(alerts, callId) {
         var i;
         if (!alerts || !Array.isArray(alerts))
             return this._reject('Body must contain an "alerts" array.');
@@ -31,14 +31,18 @@ AlertIngest.prototype = {
             return this._reject('"alerts" is empty - send at least one alert.');
         if (alerts.length > this.MAX_BATCH)
             return this._reject('Batch of ' + alerts.length + ' alerts exceeds the maximum of ' + this.MAX_BATCH + '.');
+        // One ID for every log row of this call; the /alerts debug log uses the same one.
+        callId = callId || gs.generateGUID().substring(0, 8);
         var logIds = [];
         for (i = 0; i < alerts.length; i++)
-            logIds.push(this._logIncoming(alerts[i]));
+            logIds.push(this._logIncoming(alerts[i], callId));
         var staged = [];
         for (i = 0; i < alerts.length; i++) {
             var mapped = this._toColumns(alerts[i]);
             if (mapped.error) {
-                this._logError(logIds[i], 'alerts[' + i + ']: ' + mapped.error);
+                // The whole batch is rejected, so every alert in it is logged as rejected.
+                for (var j = 0; j < logIds.length; j++)
+                    this._logError(logIds[j], 'alerts[' + i + ']: ' + mapped.error);
                 return this._reject('alerts[' + i + ']: ' + mapped.error, mapped.missingFields, i);
             }
             staged.push(mapped.fields);
@@ -123,7 +127,7 @@ AlertIngest.prototype = {
         var row = new GlideRecordSecure(this.STAGING_TABLE);
         if (!rowId || !row.get(rowId)) {
             entry.error = 'The alert could not be staged.';
-            this._logResult(logId, entry);
+            this._logResult(logId, entry, 'error');
             return entry;
         }
         var importState = row.getValue('sys_import_state') || 'pending';
@@ -132,7 +136,7 @@ AlertIngest.prototype = {
         if (importState === 'error' || !sysId || !table) {
             entry.error = row.getValue('sys_import_state_comment') || this._importLogError(rowId) ||
                 'Transform did not produce an incident.';
-            this._logResult(logId, entry);
+            this._logResult(logId, entry, importState === 'ignored' ? 'ignored' : 'error');
             return entry;
         }
         var target = new GlideRecordSecure(table);
@@ -147,7 +151,7 @@ AlertIngest.prototype = {
         } else {
             entry.error = 'Target record ' + sysId + ' not found on ' + table + '.';
         }
-        this._logResult(logId, entry);
+        this._logResult(logId, entry, entry.error ? 'error' : importState, entry.incidentId);
         return entry;
     },
     /**
@@ -164,6 +168,58 @@ AlertIngest.prototype = {
         log.setLimit(1);
         log.query();
         return log.next() ? ('' + log.getValue('message')).replace(/\s+/g, ' ').trim() : '';
+    },
+    /**
+     * The alert details written to the incident: as the work note on every post, and under the
+     * description when the incident is created. source is the staging row. Only the lines that
+     * carry a value are written, so a sparse alert does not produce a list of empty labels.
+     */
+    alertDetails: function(source) {
+        var company = JSON.parse(source.getValue('u_companydetails') || '{}');
+        var device = JSON.parse(source.getValue('u_devicedetails') || '{}');
+        var lines = [
+            ['Company Name', company.companyName],
+            ['Device Name', device.deviceName],
+            ['Serial Number', device.serialNumber],
+            ['Device Model', device.deviceModel],
+            ['Alert Type', this._alertLabel(source.getValue('u_type'))],
+            ['Alert Subtype', this._alertLabel(source.getValue('u_subtype'))],
+            ['Alert Status', this._alertLabel(source.getValue('u_status'))],
+            ['Source Location', source.getValue('u_sourcelocation') || ''],
+            ['Alert Rule', source.getValue('u_alertruleid') || ''],
+            ['Occurred At', this._alertStamp(source.getValue('u_occuredat'))]
+        ];
+        var out = [];
+        for (var i = 0; i < lines.length; i++) {
+            if (lines[i][1])
+                out.push(lines[i][0] + ': ' + lines[i][1]);
+        }
+        return out.join('\n');
+    },
+    /** type/subtype/status arrive as stringified {"name":...,"value":...} - show the label. */
+    _alertLabel: function(field) {
+        var raw = ('' + (field || '')).trim();
+        if (!raw)
+            return '';
+        try {
+            var parsed = JSON.parse(raw);
+            return parsed.value || parsed.name || raw;
+        } catch (e) {
+            return raw;
+        }
+    },
+    /**
+     * WXP sends epoch milliseconds as a string. getValue(), not getDisplayValue(): GlideDateTime
+     * holds UTC, and getDisplayValue() would render it in whichever user's timezone ran the
+     * import, frozen into the text. The zone is labelled so a reader knows what it is.
+     */
+    _alertStamp: function(millis) {
+        var value = Number('' + (millis || ''));
+        if (!value)
+            return '';
+        var when = new GlideDateTime();
+        when.setNumericValue(value);
+        return when.getValue() + ' UTC';
     },
     _toColumns: function(alert) {
         if (!alert || typeof alert !== 'object' || Array.isArray(alert))
@@ -203,7 +259,7 @@ AlertIngest.prototype = {
             fields: fields
         };
     },
-    _logIncoming: function(alert) {
+    _logIncoming: function(alert, callId) {
         try {
             var isFleet = !!(alert && alert.fleetAlertId);
             var entry = {
@@ -228,13 +284,26 @@ AlertIngest.prototype = {
             var log = new GlideRecordSecure(this.LOG_TABLE);
             log.initialize();
             log.setValue('alert_data', JSON.stringify(entry));
+            log.setValue('call_id', callId || '');
+            // The alert exactly as Fastn sent it, and its identifiers as columns for searching.
+            log.setValue('request_payload', JSON.stringify(alert));
+            if (alert && typeof alert === 'object') {
+                log.setValue('alert_uid', this._asString(alert.u_id));
+                log.setValue('alert_rule_id', this._asString(alert.alertRuleId));
+                log.setValue('device_alert_id', this._asString(alert.deviceAlertId));
+                log.setValue('fleet_alert_id', this._asString(alert.fleetAlertId));
+                log.setValue('event_type', this._asString(alert.eventType));
+                log.setValue('schema_version', this._asString(alert.schemaVersion));
+                log.setValue('alert_status', this._statusName(alert.u_status));
+                log.setValue('tenant_id', this._alertTenant(alert));
+            }
             return log.insert();
         } catch (e) {
             gs.error('AlertIngest._logIncoming failed: ' + e);
             return null;
         }
     },
-    _logResult: function(logId, entry) {
+    _logResult: function(logId, entry, result, incidentId) {
         if (!logId)
             return;
         try {
@@ -242,6 +311,10 @@ AlertIngest.prototype = {
             if (!log.get(logId))
                 return;
             log.setValue('alert_data', JSON.stringify(entry));
+            log.setValue('result', result || '');
+            log.setValue('error', entry.error || '');
+            if (incidentId)
+                log.setValue('incident', incidentId);
             log.update();
         } catch (e) {
             gs.error('AlertIngest._logResult failed: ' + e);
@@ -262,6 +335,8 @@ AlertIngest.prototype = {
             }
             entry.error = message;
             log.setValue('alert_data', JSON.stringify(entry));
+            log.setValue('result', 'rejected');
+            log.setValue('error', message);
             log.update();
         } catch (e) {
             gs.error('AlertIngest._logError failed: ' + e);
@@ -269,6 +344,33 @@ AlertIngest.prototype = {
     },
     _tenantId: function() {
         return gs.getProperty('x_hpws_wrkfrcexpam.tenants', '');
+    },
+    /** The tenant the alert itself names: u_tenantid, else the tenantId inside u_companydetails. */
+    _alertTenant: function(alert) {
+        if (alert.u_tenantid)
+            return this._asString(alert.u_tenantid);
+        try {
+            var company = alert.u_companydetails;
+            if (typeof company === 'string')
+                company = JSON.parse(company || '{}');
+            return (company && company.tenantId) ? '' + company.tenantId : '';
+        } catch (e) {
+            return '';
+        }
+    },
+    /** u_status arrives as a stringified {"name":"NEW","value":"New"}; a bare "NEW" also works. */
+    _statusName: function(field) {
+        var raw = (field && typeof field === 'object') ? JSON.stringify(field) : ('' + (field || '')).trim();
+        if (!raw)
+            return '';
+        try {
+            var parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object')
+                return ('' + parsed).toUpperCase();
+            return ('' + (parsed.name || parsed.value || '')).toUpperCase();
+        } catch (e) {
+            return raw.toUpperCase();
+        }
     },
     _isoNow: function() {
         var v = new GlideDateTime().getValue();
@@ -320,13 +422,13 @@ AlertIngest.prototype = {
         <sys_created_by>saurav.sarkar</sys_created_by>
         <sys_created_on>2026-08-18 15:55:10</sys_created_on>
         <sys_id>207d62592b760b10eb1cfbfdf291bf8f</sys_id>
-        <sys_mod_count>24</sys_mod_count>
+        <sys_mod_count>26</sys_mod_count>
         <sys_name>AlertIngest</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_207d62592b760b10eb1cfbfdf291bf8f</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-10-22 14:19:57</sys_updated_on>
+        <sys_updated_on>2026-10-22 18:29:28</sys_updated_on>
     </sys_script_include>
 </record_update>

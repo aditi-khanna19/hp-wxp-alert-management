@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege">
+    <sys_scope_privilege action="DELETE">
+        <operation>execute</operation>
+        <source_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</source_scope>
+        <status>allowed</status>
+        <sys_class_name>sys_scope_privilege</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-09-24 12:10:44</sys_created_on>
+        <sys_id>3dec18552bebc310eb1cfbfdf291bf6f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ScriptableRESTMessageClient.executeAsync</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_scope_privilege_3dec18552bebc310eb1cfbfdf291bf6f</sys_update_name>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-09-24 12:10:44</sys_updated_on>
+        <target_name>ScriptableRESTMessageClient.executeAsync</target_name>
+        <target_scope display_value="Global">global</target_scope>
+        <target_type>scriptable</target_type>
+    </sys_scope_privilege>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_scope_privilege_3dec18552bebc310eb1cfbfdf291bf6f</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege"><sys_scope_privilege action="INSERT_OR_UPDATE"><operation>execute</operation><source_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</source_scope><status>allowed</status><sys_class_name>sys_scope_privilege</sys_class_name><sys_created_by>jessica.braganza</sys_created_by><sys_created_on>2026-09-24 12:10:44</sys_created_on><sys_id>3dec18552bebc310eb1cfbfdf291bf6f</sys_id><sys_mod_count>0</sys_mod_count><sys_name>ScriptableRESTMessageClient.executeAsync</sys_name><sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package><sys_policy/><sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope><sys_update_name>sys_scope_privilege_3dec18552bebc310eb1cfbfdf291bf6f</sys_update_name><sys_updated_by>jessica.braganza</sys_updated_by><sys_updated_on>2026-09-24 12:10:44</sys_updated_on><target_name>ScriptableRESTMessageClient.executeAsync</target_name><target_scope display_value="Global">global</target_scope><target_type>scriptable</target_type></sys_scope_privilege></record_update>]]></payload>
+        <payload_hash>481302345</payload_hash>
+        <record_name>ScriptableRESTMessageClient.executeAsync</record_name>
+        <reverted_from/>
+        <source>047833962bf94750eb1cfbfdf291bf41</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-09-24 12:10:44</sys_created_on>
+        <sys_id>7dec18552bebc310eb1cfbfdf291bf73</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a0d35344000000001</sys_recorded_at>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-09-24 12:10:44</sys_updated_on>
+        <type>Cross scope privilege</type>
+        <update_guid>35ec185548ebc310800755fe0ffd0f72</update_guid>
+        <update_guid_history>35ec185548ebc310800755fe0ffd0f72:481302345</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-10-23 13:42:02</sys_created_on>
+        <sys_db_object display_value="" name="sys_scope_privilege">sys_scope_privilege</sys_db_object>
+        <sys_id>681f9901202a489a89701bab205ff681</sys_id>
+        <sys_metadata>3dec18552bebc310eb1cfbfdf291bf6f</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ScriptableRESTMessageClient.executeAsync</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_scope_privilege_3dec18552bebc310eb1cfbfdf291bf6f</sys_update_name>
+        <sys_update_version display_value="sys_scope_privilege_3dec18552bebc310eb1cfbfdf291bf6f">7dec18552bebc310eb1cfbfdf291bf73</sys_update_version>
+        <sys_updated_by>jessica.braganza</sys_updated_by>
+        <sys_updated_on>2026-10-23 13:42:02</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

@@ -14,6 +14,188 @@
             <sys_user/>
             <type/>
         </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>incident</element>
+            <position>1</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:48</sys_created_on>
+            <sys_id>a9a5f9522b405b54eb1cfbfdf291bffe</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:48</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>tenant_id</element>
+            <position>2</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:49</sys_created_on>
+            <sys_id>31a5f9522b405b54eb1cfbfdf291bff9</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:49</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>alert_uid</element>
+            <position>3</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:49</sys_created_on>
+            <sys_id>06a53d522b405b54eb1cfbfdf291bf4d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:49</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>alert_rule_id</element>
+            <position>4</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:50</sys_created_on>
+            <sys_id>92a53d522b405b54eb1cfbfdf291bf92</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:50</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>device_alert_id</element>
+            <position>5</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:51</sys_created_on>
+            <sys_id>52a53d522b405b54eb1cfbfdf291bfc2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:51</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>fleet_alert_id</element>
+            <position>6</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:52</sys_created_on>
+            <sys_id>eaa53d522b405b54eb1cfbfdf291bfe0</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:52</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>event_type</element>
+            <position>7</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:52</sys_created_on>
+            <sys_id>e2a57d522b405b54eb1cfbfdf291bf1d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:52</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>schema_version</element>
+            <position>8</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:52</sys_created_on>
+            <sys_id>baa57d522b405b54eb1cfbfdf291bf16</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:52</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>alert_status</element>
+            <position>9</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:53</sys_created_on>
+            <sys_id>b6a57d522b405b54eb1cfbfdf291bf3a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:53</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>result</element>
+            <position>10</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:54</sys_created_on>
+            <sys_id>03a57d522b405b54eb1cfbfdf291bfa4</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:54</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>error</element>
+            <position>11</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:55</sys_created_on>
+            <sys_id>1fa57d522b405b54eb1cfbfdf291bfc7</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:55</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>call_id</element>
+            <position>12</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:56</sys_created_on>
+            <sys_id>6ba57d522b405b54eb1cfbfdf291bfc1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:56</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>request_payload</element>
+            <position>13</position>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:57</sys_created_on>
+            <sys_id>f3a5bd522b405b54eb1cfbfdf291bf49</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="x_hpws_wrkfrcexpam_incoming_alert_log" sys_domain="global" view="Default view">67ec5ec32be30750eb1cfbfdf291bf89</sys_ui_section>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:57</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
         <sys_ui_section action="INSERT_OR_UPDATE">
             <caption/>
             <header>false</header>
