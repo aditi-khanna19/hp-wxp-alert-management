@@ -11,16 +11,16 @@
         <sys_created_by>aditi.khanna</sys_created_by>
         <sys_created_on>2026-07-03 07:05:30</sys_created_on>
         <sys_id>75ea7f5e2bf94750eb1cfbfdf291bf45</sys_id>
-        <sys_mod_count>40</sys_mod_count>
+        <sys_mod_count>41</sys_mod_count>
         <sys_name>x_hpws_wrkfrcexpam.api.fastn.api.key</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_properties_75ea7f5e2bf94750eb1cfbfdf291bf45</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-10-23 14:01:22</sys_updated_on>
+        <sys_updated_on>2026-10-26 15:36:33</sys_updated_on>
         <type>password</type>
-        <value/>
+        <value>{{dflt-gpaes}}8WTAXual79Pw+5PP6GBzar//UInxtDaNF+/Ez7lmBGjFBHIk3+R4DDthJ8wtVGZo</value>
         <write_roles>x_hpws_wrkfrcexpam.admin</write_roles>
     </sys_properties>
     <sys_translated_text action="delete_multiple" query="documentkey=75ea7f5e2bf94750eb1cfbfdf291bf45"/>

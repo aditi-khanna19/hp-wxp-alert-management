@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
-    <element db_object_id="0c1298ee2b2b8f10eb1cfbfdf291bfa6" label="Incoming Alert Log" max_length="40" name="x_hpws_wrkfrcexpam_incoming_alert_log" type="collection">
+    <element db_object_id="0c1298ee2b2b8f10eb1cfbfdf291bfa6" label="WXP Alert Log" max_length="40" name="x_hpws_wrkfrcexpam_incoming_alert_log" type="collection">
         <element label="Alert status" max_length="40" name="alert_status" type="string"/>
         <element label="Schema version" max_length="20" name="schema_version" type="string"/>
         <element label="Error" max_length="4000" name="error" type="string"/>

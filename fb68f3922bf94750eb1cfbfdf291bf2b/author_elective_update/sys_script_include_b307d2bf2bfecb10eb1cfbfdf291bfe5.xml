@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="DELETE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.WrkfrcExpAMCalibrationUtil</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Utility for Alert Management calibration and setup.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>WrkfrcExpAMCalibrationUtil</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var WrkfrcExpAMCalibrationUtil = Class.create();
+WrkfrcExpAMCalibrationUtil.prototype = {
+
+    initialize: function() {},
+
+    runFixScript: function() {
+
+        var LOG = '[Alert Management Calibration] ';
+        var errors = [];
+        var logs = [];
+        var appid = '';
+
+        /* =====================================================
+         * Helper functions 
+         * ===================================================== */
+
+        // SUCCESS logs. Routine detail goes to gs.debug: written only when
+        // x_hpws_wrkfrcexpam.logging.verbosity is 'debug'.
+        function logInfo(name, value) {
+            logs.push({
+                name: name,
+                status: true,
+                message: value || ''
+            });
+            gs.debug(LOG + name + ' - ' + value);
+        }
+
+        // ERROR logs
+        function logError(name, value) {
+            errors.push(name);
+            logs.push({
+                name: name,
+                status: false,
+                message: value || 'Failed'
+            });
+            gs.error(LOG + name + ' - ' + value);
+        }
+        // WARN logs (a configuration state, not a failure)
+        function logWarn(name, value) {
+            errors.push(name);
+            logs.push({
+                name: name,
+                status: false,
+                message: value || 'Failed'
+            });
+            gs.warn(LOG + name + ' - ' + value);
+        }
+
+        function getScopeSysID(name) {
+            var sysId = gs.getCurrentApplicationId();
+
+            if (sysId) {
+                appid = sysId;
+
+                gs.debug(LOG + 'Scope - ' + name);
+            } else {
+                gs.debug(LOG + 'Scope - Not found: ' + name);
+            }
+        }
+
+        /* =====================================================
+         * API STATUS CHECK
+         *
+         * Checks that the connection settings are present. The live connection test is off
+         * in this version: the only Fastn call available for it (getTenantsChildren) needs a
+         * tenant ID, which setup no longer asks for. A tenant-free check returns in v2.
+         * ===================================================== */
+
+        function validateAPIConnection() {
+
+            var apiKey = gs.getProperty('x_hpws_wrkfrcexpam.api.fastn.api.key');
+            var baseUrl = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+            var spaceId = gs.getProperty('x_hpws_wrkfrcexpam.fastn.space.id');
+
+            // NOT CONFIGURED
+            if (!apiKey) {
+                logWarn('API Status', 'Not Configured');
+                return;
+            }
+
+            // Missing dependencies 
+            if (!baseUrl || !spaceId) {
+                logWarn('API Status', 'Configured but Missing Required Properties');
+                return;
+            }
+
+            logInfo('API Status', 'Configured');
+        }
+
+        /* =====================================================
+         * START
+         * ===================================================== */
+
+        gs.debug(LOG + 'Started');
+
+        try {
+
+            /* =====================================================
+             * URL Calibration
+             * ===================================================== */
+
+            getScopeSysID('x_hpws_wrkfrcexpam');
+
+            logInfo('URL Calibration', 'Done');
+
+            /* =====================================================
+             * API Status
+             * ===================================================== */
+            validateAPIConnection();
+
+
+
+        } catch (e) {
+            logError('Unhandled failure', e.message);
+        }
+
+        var finalStatus = errors.length === 0;
+
+        return {
+            success: finalStatus,
+            message: finalStatus ? 'Setup completed' : 'Setup failed',
+            logs: logs
+        };
+    },
+
+    resetSetup: function() {
+        var LOG = '[Alert Management Calibration - RESET] ';
+
+
+        try {
+
+
+            gs.setProperty('x_hpws_wrkfrcexpam.api.fastn.api.key', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.tenants', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.fastn.space.id', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.tenant.type', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.notify_failure_group', '');
+
+            gs.debug(LOG + 'Properties cleared');
+
+
+            var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
+            tenantGr.query();
+            tenantGr.deleteMultiple();
+
+
+            return {
+                success: true,
+                message: 'Setup reset successful'
+            };
+
+
+        } catch (e) {
+            gs.error(LOG + e.message);
+
+
+            return {
+                success: false,
+                message: e.message
+            };
+        }
+    },
+
+    type: 'WrkfrcExpAMCalibrationUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-26 08:56:18</sys_created_on>
+        <sys_id>b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>WrkfrcExpAMCalibrationUtil</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-23 13:34:36</sys_updated_on>
+    </sys_script_include>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5</name>
+        <payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_include"&gt;&lt;sys_script_include action="INSERT_OR_UPDATE"&gt;&lt;access&gt;package_private&lt;/access&gt;&lt;active&gt;true&lt;/active&gt;&lt;api_name&gt;x_hpws_wrkfrcexpam.WrkfrcExpAMCalibrationUtil&lt;/api_name&gt;&lt;caller_access/&gt;&lt;client_callable&gt;false&lt;/client_callable&gt;&lt;description&gt;Utility for Alert Management calibration and setup.&lt;/description&gt;&lt;mobile_callable&gt;false&lt;/mobile_callable&gt;&lt;name&gt;WrkfrcExpAMCalibrationUtil&lt;/name&gt;&lt;sandbox_callable&gt;false&lt;/sandbox_callable&gt;&lt;script&gt;&lt;![CDATA[var WrkfrcExpAMCalibrationUtil = Class.create();
+WrkfrcExpAMCalibrationUtil.prototype = {
+
+    initialize: function() {},
+
+    runFixScript: function() {
+
+        var LOG = '[Alert Management Calibration] ';
+        var errors = [];
+        var logs = [];
+        var appid = '';
+
+        /* =====================================================
+         * Helper functions 
+         * ===================================================== */
+
+        // SUCCESS logs. Routine detail goes to gs.debug: written only when
+        // x_hpws_wrkfrcexpam.logging.verbosity is 'debug'.
+        function logInfo(name, value) {
+            logs.push({
+                name: name,
+                status: true,
+                message: value || ''
+            });
+            gs.debug(LOG + name + ' - ' + value);
+        }
+
+        // ERROR logs
+        function logError(name, value) {
+            errors.push(name);
+            logs.push({
+                name: name,
+                status: false,
+                message: value || 'Failed'
+            });
+            gs.error(LOG + name + ' - ' + value);
+        }
+        // WARN logs (a configuration state, not a failure)
+        function logWarn(name, value) {
+            errors.push(name);
+            logs.push({
+                name: name,
+                status: false,
+                message: value || 'Failed'
+            });
+            gs.warn(LOG + name + ' - ' + value);
+        }
+
+        function getScopeSysID(name) {
+            var sysId = gs.getCurrentApplicationId();
+
+            if (sysId) {
+                appid = sysId;
+
+                gs.debug(LOG + 'Scope - ' + name);
+            } else {
+                gs.debug(LOG + 'Scope - Not found: ' + name);
+            }
+        }
+
+        /* =====================================================
+         * API STATUS CHECK
+         *
+         * Checks that the connection settings are present. The live connection test is off
+         * in this version: the only Fastn call available for it (getTenantsChildren) needs a
+         * tenant ID, which setup no longer asks for. A tenant-free check returns in v2.
+         * ===================================================== */
+
+        function validateAPIConnection() {
+
+            var apiKey = gs.getProperty('x_hpws_wrkfrcexpam.api.fastn.api.key');
+            var baseUrl = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+            var spaceId = gs.getProperty('x_hpws_wrkfrcexpam.fastn.space.id');
+
+            // NOT CONFIGURED
+            if (!apiKey) {
+                logWarn('API Status', 'Not Configured');
+                return;
+            }
+
+            // Missing dependencies 
+            if (!baseUrl || !spaceId) {
+                logWarn('API Status', 'Configured but Missing Required Properties');
+                return;
+            }
+
+            logInfo('API Status', 'Configured');
+        }
+
+        /* =====================================================
+         * START
+         * ===================================================== */
+
+        gs.debug(LOG + 'Started');
+
+        try {
+
+            /* =====================================================
+             * URL Calibration
+             * ===================================================== */
+
+            getScopeSysID('x_hpws_wrkfrcexpam');
+
+            logInfo('URL Calibration', 'Done');
+
+            /* =====================================================
+             * API Status
+             * ===================================================== */
+            validateAPIConnection();
+
+
+
+        } catch (e) {
+            logError('Unhandled failure', e.message);
+        }
+
+        var finalStatus = errors.length === 0;
+
+        return {
+            success: finalStatus,
+            message: finalStatus ? 'Setup completed' : 'Setup failed',
+            logs: logs
+        };
+    },
+
+    resetSetup: function() {
+        var LOG = '[Alert Management Calibration - RESET] ';
+
+
+        try {
+
+
+            gs.setProperty('x_hpws_wrkfrcexpam.api.fastn.api.key', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.tenants', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.fastn.space.id', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.tenant.type', '');
+            gs.setProperty('x_hpws_wrkfrcexpam.notify_failure_group', '');
+
+            gs.debug(LOG + 'Properties cleared');
+
+
+            var tenantGr = new GlideRecordSecure('x_hpws_wrkfrcexpam_tenant_list');
+            tenantGr.query();
+            tenantGr.deleteMultiple();
+
+
+            return {
+                success: true,
+                message: 'Setup reset successful'
+            };
+
+
+        } catch (e) {
+            gs.error(LOG + e.message);
+
+
+            return {
+                success: false,
+                message: e.message
+            };
+        }
+    },
+
+    type: 'WrkfrcExpAMCalibrationUtil'
+};]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;jessica.braganza&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2026-08-26 08:56:18&lt;/sys_created_on&gt;&lt;sys_id&gt;b307d2bf2bfecb10eb1cfbfdf291bfe5&lt;/sys_id&gt;&lt;sys_mod_count&gt;33&lt;/sys_mod_count&gt;&lt;sys_name&gt;WrkfrcExpAMCalibrationUtil&lt;/sys_name&gt;&lt;sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam"&gt;fb68f3922bf94750eb1cfbfdf291bf2b&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="HP WXP Alert Management"&gt;fb68f3922bf94750eb1cfbfdf291bf2b&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;saurav.sarkar&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2026-10-23 13:34:36&lt;/sys_updated_on&gt;&lt;/sys_script_include&gt;&lt;/record_update&gt;</payload>
+        <payload_hash>1189795485</payload_hash>
+        <record_name>WrkfrcExpAMCalibrationUtil</record_name>
+        <reverted_from/>
+        <source>cb7797822b44d754eb1cfbfdf291bf85</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-23 13:34:36</sys_created_on>
+        <sys_id>f836466e2b001f54eb1cfbfdf291bfa6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a168f8769a0000001</sys_recorded_at>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-23 13:34:36</sys_updated_on>
+        <type>Script Include</type>
+        <update_guid>b436466e01001f547e9ac84ab199fca5</update_guid>
+        <update_guid_history>b436466e01001f547e9ac84ab199fca5:1189795485,211406e6ec001f5497b4e2d99a6a96e5:1268613787,1366209a8d0897101a4667c659aaf4c2:161494358,48448812b9c097108e1d7f5f7d2a4f51:-2065733172,20140416a0c097103b646c46e04cb560:-827284596,42d0c1c3df774bd0bde519d4c4936243:1601570386,9d900d8318774bd0c64d501295212765:1275326585,b7fbb4c7ac374bd09a089d9dd2b04c21:-1804571559,4aeb78c7ee374bd0cc0aeddefb83a210:1750149706,d8db3cc353374bd0c76b74cb38a2188f:2050504940,57597c8f0cf34bd03c08bbfa0595cdeb:-1491169737,b071f08f3bffc7d0203e25bc7125453e:1710309684,1a8e9447537fc7d00f557eb294fed2d7:-1532201324,8bbd9883ab7fc7d0ee5adf21959150b6:531846804,f057d403133fc7d06543a022788998c3:1882839604,6c27dc43343fc7d05c6529c47eaeb503:541727000,8fe6cc43f73f0bd065628954c35309ab:-1683345190,7c0ff186407303d08b2905c9b0a72dc4:815285673,d6b771065d3303d0d8cf87737f52b36b:-155085445,4ac9075df7774b90ec8a7b32ab13df91:1445224849,343ef03550474b10a3c82a333d3c1ff4:1801758389,44e46ce90a87471052eaa0bad115edb4:1800916513,6496f719a94347109874a93535f1362e:-1539056880,ff157f91984347109b323fbce1390aa5:1349255145,a0d5c4e83887075049e34a3010e31f76:734990664,b122b418c58b43505b8069b3581d0ae6:-1788022264,555034d8c74b43503a374c629d5197fb:1931642044,7c0e6c1c3c4b4350536f36a046af4ba5:-1788022264,838d6058c94b4350975d525d473f2ab3:-1442186017,a93c2c94854b43509e0b6cfe9cb9232f:734990664,b0cfab888d0f0350a196f1ec68720d15:776738171,8c492a7314360f10a84c48ecc211eaf7:1736785534,1a85e6ffb5b20f104bd830f3b794839e:237613795,0eff1a33acb20f1088d32214ecdea584:58301635,a3eb96b32a720f100da130bddfeccc22:-94862867,764a5efbac320f10a44cdac4d3e5acd5:-983904690</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-26 15:44:06</sys_created_on>
+        <sys_db_object display_value="" name="sys_script_include">sys_script_include</sys_db_object>
+        <sys_id>6d43d5e5c2a84c0886cd70c7a4abf240</sys_id>
+        <sys_metadata>b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>WrkfrcExpAMCalibrationUtil</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5</sys_update_name>
+        <sys_update_version display_value="sys_script_include_b307d2bf2bfecb10eb1cfbfdf291bfe5">f836466e2b001f54eb1cfbfdf291bfa6</sys_update_version>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-26 15:44:06</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

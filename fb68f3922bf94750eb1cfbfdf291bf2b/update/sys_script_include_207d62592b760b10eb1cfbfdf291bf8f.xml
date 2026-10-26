@@ -108,7 +108,9 @@ AlertIngest.prototype = {
         var entry = {
             eventType: alert.eventType,
             schemaVersion: alert.schemaVersion,
-            tenantId: this._tenantId(),
+            // The alert's own tenant, as its Incoming Alert Log row stores it; the connection
+            // tenant only when the alert names none.
+            tenantId: this._alertTenant(alert) || this._tenantId(),
             alertRuleId: this._asString(alert.alertRuleId),
             fleetAlertId: isFleet ? this._asString(alert.fleetAlertId) : null,
             deviceAlertId: isFleet ? null : this._asString(alert.deviceAlertId),
@@ -265,7 +267,7 @@ AlertIngest.prototype = {
             var entry = {
                 eventType: alert && alert.eventType,
                 schemaVersion: alert && alert.schemaVersion,
-                tenantId: this._tenantId(),
+                tenantId: ((alert && typeof alert === 'object') ? this._alertTenant(alert) : '') || this._tenantId(),
                 alertRuleId: alert && alert.alertRuleId,
                 fleetAlertId: isFleet ? alert.fleetAlertId : null,
                 deviceAlertId: isFleet ? null : (alert && alert.deviceAlertId),
@@ -422,13 +424,13 @@ AlertIngest.prototype = {
         <sys_created_by>saurav.sarkar</sys_created_by>
         <sys_created_on>2026-08-18 15:55:10</sys_created_on>
         <sys_id>207d62592b760b10eb1cfbfdf291bf8f</sys_id>
-        <sys_mod_count>26</sys_mod_count>
+        <sys_mod_count>27</sys_mod_count>
         <sys_name>AlertIngest</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_script_include_207d62592b760b10eb1cfbfdf291bf8f</sys_update_name>
         <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-10-22 18:29:28</sys_updated_on>
+        <sys_updated_on>2026-10-26 14:23:05</sys_updated_on>
     </sys_script_include>
 </record_update>
