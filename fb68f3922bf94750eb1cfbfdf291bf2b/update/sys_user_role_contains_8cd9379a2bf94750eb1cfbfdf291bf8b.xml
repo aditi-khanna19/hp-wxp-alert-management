@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role_contains">
+    <sys_user_role_contains action="INSERT_OR_UPDATE">
+        <contains display_value="x_hpws_wrkfrcexpam.user" name="x_hpws_wrkfrcexpam.user">b0893b5a2bf94750eb1cfbfdf291bf4a</contains>
+        <role display_value="x_hpws_wrkfrcexpam.admin" name="x_hpws_wrkfrcexpam.admin">0f19f71a2bf94750eb1cfbfdf291bf2b</role>
+        <sys_class_name>sys_user_role_contains</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-07-03 06:59:57</sys_created_on>
+        <sys_id>8cd9379a2bf94750eb1cfbfdf291bf8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>x_hpws_wrkfrcexpam.user.x_hpws_wrkfrcexpam.admin</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_user_role_contains_8cd9379a2bf94750eb1cfbfdf291bf8b</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-07-03 06:59:57</sys_updated_on>
+    </sys_user_role_contains>
+</record_update>

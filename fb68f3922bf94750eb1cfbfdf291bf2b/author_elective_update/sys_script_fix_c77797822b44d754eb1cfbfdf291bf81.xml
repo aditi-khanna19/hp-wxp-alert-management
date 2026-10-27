@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_fix">
+    <sys_script_fix action="DELETE">
+        <before>false</before>
+        <description>Temporary test for certification point 4 (non-admin): evaluated as incidentConnect by a global impersonation script. Inserts test alerts. Runs only on ven07367. Delete before the next publish.</description>
+        <name>ZZ TEST - AM platform-default import che</name>
+        <record_for_rollback>true</record_for_rollback>
+        <script><![CDATA[// TEMPORARY TEST - delete before the next publish. HP WXP Alert Management, 22 Oct 2026.
+// Tests the DEPLOYED AlertIngest.importBatch, unmodified, for certification point 4.
+// Evaluated in the app scope as incidentConnect by a global script that impersonates it.
+// B3: a batch of 3 new alerts. B10: one malformed alert and one good one.
+// All alerts are NEW with fresh u_ids, so they only insert incidents and nothing goes to Fastn.
+// Runs only on hp-dev (ven07367).
+(function() {
+    var TAG = '[AM-DEPLOYED-TEST]';
+    var label = (typeof runLabel !== 'undefined') ? runLabel : 'manual';
+    if (gs.getProperty('instance_name') != 'ven07367') {
+        gs.info(TAG + ' skipped - not ven07367');
+        return;
+    }
+
+    gs.info(TAG + ' ' + label + ' identity ' + JSON.stringify({
+        user: gs.getUserName(),
+        scope: gs.getCurrentScopeName(),
+        admin: gs.hasRole('admin'),
+        appUser: gs.hasRole('x_hpws_wrkfrcexpam.user')
+    }));
+
+    var runId = 'zz-deptest-' + label + '-' + new GlideDateTime().getNumericValue();
+
+    report('B3-bulk', new AlertIngest().importBatch([buildAlert('b3-1'), buildAlert('b3-2'), buildAlert('b3-3')]));
+
+    var bad = buildAlert('b10-bad');
+    bad.u_devicedetails = '{not valid json';
+    report('B10-bad-row', new AlertIngest().importBatch([bad, buildAlert('b10-good')]));
+
+    gs.info(TAG + ' ' + label + ' done run=' + runId);
+
+    function report(step, outcome) {
+        var incidents = outcome.incidents || [];
+        var summary = [];
+        for (var i = 0; i < incidents.length; i++)
+            summary.push({
+                u_id: incidents[i].u_id,
+                incidentId: incidents[i].incidentId,
+                displayId: incidents[i].displayId,
+                newState: incidents[i].newState,
+                error: incidents[i].error
+            });
+        gs.info(TAG + ' ' + label + ' ' + step + ' ' + JSON.stringify({
+            ok: outcome.ok,
+            status: outcome.status,
+            error: outcome.error,
+            import_set: outcome.import_set,
+            import_set_id: outcome.import_set_id,
+            batch_size: outcome.batch_size,
+            incidents: summary
+        }));
+    }
+
+    function buildAlert(suffix) {
+        return {
+            eventType: 'INCIDENT_CREATED',
+            schemaVersion: '1.0',
+            alertRuleId: 'zz-deptest-rule',
+            itsmType: 'SERVICENOW',
+            deviceAlertId: runId + '-device-' + suffix,
+            u_id: runId + '-' + suffix,
+            u_title: '[TEST deployed ' + suffix + '] Platform-default import check - please ignore',
+            u_description: 'Created on 22 Oct 2026 by a temporary test of the deployed AlertIngest, run as incidentConnect. Safe to delete.',
+            u_status: '{"name": "NEW", "value": "New"}',
+            u_impact: '3',
+            u_urgency: '3',
+            u_assignmentgroupid: 'Service Desk',
+            u_category: 'Software',
+            u_subcategory: 'Operating System',
+            u_devicedetails: '{"deviceName": "ZZ-TEST-DEVICE"}',
+            u_sourcelocation: 'zz-deptest'
+        };
+    }
+})();
+]]></script>
+        <sys_class_name>sys_script_fix</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 06:12:46</sys_created_on>
+        <sys_id>c77797822b44d754eb1cfbfdf291bf81</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>ZZ TEST - AM platform-default import che</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_fix_c77797822b44d754eb1cfbfdf291bf81</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 08:44:15</sys_updated_on>
+        <unloadable>false</unloadable>
+    </sys_script_fix>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_script_fix_c77797822b44d754eb1cfbfdf291bf81</name>
+        <payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_fix"&gt;&lt;sys_script_fix action="INSERT_OR_UPDATE"&gt;&lt;before&gt;false&lt;/before&gt;&lt;description&gt;Temporary test for certification point 4 (non-admin): evaluated as incidentConnect by a global impersonation script. Inserts test alerts. Runs only on ven07367. Delete before the next publish.&lt;/description&gt;&lt;name&gt;ZZ TEST - AM platform-default import che&lt;/name&gt;&lt;record_for_rollback&gt;true&lt;/record_for_rollback&gt;&lt;script&gt;&lt;![CDATA[// TEMPORARY TEST - delete before the next publish. HP WXP Alert Management, 22 Oct 2026.
+// Tests the DEPLOYED AlertIngest.importBatch, unmodified, for certification point 4.
+// Evaluated in the app scope as incidentConnect by a global script that impersonates it.
+// B3: a batch of 3 new alerts. B10: one malformed alert and one good one.
+// All alerts are NEW with fresh u_ids, so they only insert incidents and nothing goes to Fastn.
+// Runs only on hp-dev (ven07367).
+(function() {
+    var TAG = '[AM-DEPLOYED-TEST]';
+    var label = (typeof runLabel !== 'undefined') ? runLabel : 'manual';
+    if (gs.getProperty('instance_name') != 'ven07367') {
+        gs.info(TAG + ' skipped - not ven07367');
+        return;
+    }
+
+    gs.info(TAG + ' ' + label + ' identity ' + JSON.stringify({
+        user: gs.getUserName(),
+        scope: gs.getCurrentScopeName(),
+        admin: gs.hasRole('admin'),
+        appUser: gs.hasRole('x_hpws_wrkfrcexpam.user')
+    }));
+
+    var runId = 'zz-deptest-' + label + '-' + new GlideDateTime().getNumericValue();
+
+    report('B3-bulk', new AlertIngest().importBatch([buildAlert('b3-1'), buildAlert('b3-2'), buildAlert('b3-3')]));
+
+    var bad = buildAlert('b10-bad');
+    bad.u_devicedetails = '{not valid json';
+    report('B10-bad-row', new AlertIngest().importBatch([bad, buildAlert('b10-good')]));
+
+    gs.info(TAG + ' ' + label + ' done run=' + runId);
+
+    function report(step, outcome) {
+        var incidents = outcome.incidents || [];
+        var summary = [];
+        for (var i = 0; i &lt; incidents.length; i++)
+            summary.push({
+                u_id: incidents[i].u_id,
+                incidentId: incidents[i].incidentId,
+                displayId: incidents[i].displayId,
+                newState: incidents[i].newState,
+                error: incidents[i].error
+            });
+        gs.info(TAG + ' ' + label + ' ' + step + ' ' + JSON.stringify({
+            ok: outcome.ok,
+            status: outcome.status,
+            error: outcome.error,
+            import_set: outcome.import_set,
+            import_set_id: outcome.import_set_id,
+            batch_size: outcome.batch_size,
+            incidents: summary
+        }));
+    }
+
+    function buildAlert(suffix) {
+        return {
+            eventType: 'INCIDENT_CREATED',
+            schemaVersion: '1.0',
+            alertRuleId: 'zz-deptest-rule',
+            itsmType: 'SERVICENOW',
+            deviceAlertId: runId + '-device-' + suffix,
+            u_id: runId + '-' + suffix,
+            u_title: '[TEST deployed ' + suffix + '] Platform-default import check - please ignore',
+            u_description: 'Created on 22 Oct 2026 by a temporary test of the deployed AlertIngest, run as incidentConnect. Safe to delete.',
+            u_status: '{"name": "NEW", "value": "New"}',
+            u_impact: '3',
+            u_urgency: '3',
+            u_assignmentgroupid: 'Service Desk',
+            u_category: 'Software',
+            u_subcategory: 'Operating System',
+            u_devicedetails: '{"deviceName": "ZZ-TEST-DEVICE"}',
+            u_sourcelocation: 'zz-deptest'
+        };
+    }
+})();
+]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_fix&lt;/sys_class_name&gt;&lt;sys_created_by&gt;saurav.sarkar&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2026-10-22 06:12:46&lt;/sys_created_on&gt;&lt;sys_id&gt;c77797822b44d754eb1cfbfdf291bf81&lt;/sys_id&gt;&lt;sys_mod_count&gt;3&lt;/sys_mod_count&gt;&lt;sys_name&gt;ZZ TEST - AM platform-default import che&lt;/sys_name&gt;&lt;sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam"&gt;fb68f3922bf94750eb1cfbfdf291bf2b&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="HP WXP Alert Management"&gt;fb68f3922bf94750eb1cfbfdf291bf2b&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_fix_c77797822b44d754eb1cfbfdf291bf81&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;saurav.sarkar&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2026-10-22 08:44:15&lt;/sys_updated_on&gt;&lt;unloadable&gt;false&lt;/unloadable&gt;&lt;/sys_script_fix&gt;&lt;/record_update&gt;</payload>
+        <payload_hash>-829137734</payload_hash>
+        <record_name>ZZ TEST - AM platform-default import che</record_name>
+        <reverted_from/>
+        <source>cb7797822b44d754eb1cfbfdf291bf85</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 08:44:16</sys_created_on>
+        <sys_id>122abf4aeb40971030f9f95ccad0cd62</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a162c84b150000001</sys_recorded_at>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 08:44:16</sys_updated_on>
+        <type>Fix Script</type>
+        <update_guid>9a2abf4ab3409710e7251374c98bc160</update_guid>
+        <update_guid_history>9a2abf4ab3409710e7251374c98bc160:-829137734,426cdb8e020c5710b9e706c1e25a101b:-912409128,bc8b1b4ec844d754422ba91faeb45302:1447706718,c3771b82eb44d7542aaa468e7b0d5e8a:1979269226</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 11:01:31</sys_created_on>
+        <sys_db_object display_value="" name="sys_script_fix">sys_script_fix</sys_db_object>
+        <sys_id>18e53fd97cba4b5b82918717e6e097a1</sys_id>
+        <sys_metadata>c77797822b44d754eb1cfbfdf291bf81</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ZZ TEST - AM platform-default import che</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_script_fix_c77797822b44d754eb1cfbfdf291bf81</sys_update_name>
+        <sys_update_version display_value="sys_script_fix_c77797822b44d754eb1cfbfdf291bf81">122abf4aeb40971030f9f95ccad0cd62</sys_update_version>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 11:01:31</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

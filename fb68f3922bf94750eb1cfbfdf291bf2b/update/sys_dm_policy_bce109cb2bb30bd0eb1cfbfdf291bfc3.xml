@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_dm_policy">
+    <sys_dm_policy action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <name>HP Alert Import Set Delete</name>
+        <sys_class_name>sys_dm_policy</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-10-12 11:37:57</sys_created_on>
+        <sys_id>bce109cb2bb30bd0eb1cfbfdf291bfc3</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>HP Alert Import Set Delete</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_dm_policy_bce109cb2bb30bd0eb1cfbfdf291bfc3</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-12 11:37:57</sys_updated_on>
+        <tablename>x_hpws_wrkfrcexpam_hp_alert_inc_import_set</tablename>
+    </sys_dm_policy>
+</record_update>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="device_alert_id" label="Device alert ID" language="en" table="x_hpws_wrkfrcexpam_incoming_alert_log">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>device_alert_id</element>
+            <help/>
+            <hint/>
+            <label>Device alert ID</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <plural>Device alert IDs</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:51</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Device alert ID</sys_name>
+            <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+            <sys_update_name>sys_documentation_x_hpws_wrkfrcexpam_incoming_alert_log_device_alert_id_en</sys_update_name>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:51</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

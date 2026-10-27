@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="oauth_entity">
+    <oauth_entity action="DELETE">
+        <access>public</access>
+        <access_token_lifespan>1800</access_token_lifespan>
+        <active>true</active>
+        <auth_aig_client>false</auth_aig_client>
+        <auth_code_lifespan>60</auth_code_lifespan>
+        <auth_url/>
+        <certificate_url/>
+        <client_id>ea0f1adb9f6b4698bab9c24450d81aaf</client_id>
+        <client_secret>﷞﷟﷒2849de832b580310eb1cfbfdf291bf12﷬﷔1﷬﷭TSfqMGhubq3Wo_YJ2DPDMw==uamsBPwTQkKsaUFDGX6wfzx5VizhgmPQ2sk=﷮﷯</client_secret>
+        <client_type>integration_as_a_service</client_type>
+        <client_uuid>9636a1e8eba3839030f9f95ccad0cdac</client_uuid>
+        <code_challenge_method>S256</code_challenge_method>
+        <comments/>
+        <default_grant_type>client_credentials</default_grant_type>
+        <extend_refresh_token_expiry>false</extend_refresh_token_expiry>
+        <id_token_lifespan>86400</id_token_lifespan>
+        <jwt_provider/>
+        <login_url/>
+        <logo_url/>
+        <message_signature_lifespan>60</message_signature_lifespan>
+        <mobile_client>false</mobile_client>
+        <name>HP Alert OAuth</name>
+        <oauth_api_script/>
+        <only_rest_processor>false</only_rest_processor>
+        <protocol_name/>
+        <public_client>false</public_client>
+        <redirect_url/>
+        <refresh_token_lifespan>8640000</refresh_token_lifespan>
+        <refresh_token_url/>
+        <restricted_binding>false</restricted_binding>
+        <revoke_token_url/>
+        <salt/>
+        <scope_restriction_status>restricted</scope_restriction_status>
+        <send_client_credentials_as>request_body_parameter</send_client_credentials_as>
+        <skip_authorize>false</skip_authorize>
+        <sub_claim>sys_id</sub_claim>
+        <sys_class_name>oauth_entity</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-09-22 09:36:33</sys_created_on>
+        <sys_id>d636a1e8eba3839030f9f95ccad0cdac</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>HP Alert OAuth</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>oauth_entity_d636a1e8eba3839030f9f95ccad0cdac</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-15 13:43:38</sys_updated_on>
+        <token_format>opaque</token_format>
+        <token_url/>
+        <type>client</type>
+        <use_mutual_auth>false</use_mutual_auth>
+        <use_pkce>false</use_pkce>
+        <user display_value="AlertManagement ">872e14092b1303d0eb1cfbfdf291bf4f</user>
+    </oauth_entity>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>oauth_entity_d636a1e8eba3839030f9f95ccad0cdac</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="oauth_entity"><oauth_entity action="INSERT_OR_UPDATE"><access>public</access><access_token_lifespan>1800</access_token_lifespan><active>true</active><auth_aig_client>false</auth_aig_client><auth_code_lifespan>60</auth_code_lifespan><auth_url/><certificate_url/><client_id>ea0f1adb9f6b4698bab9c24450d81aaf</client_id><client_secret>﷞﷟﷒2849de832b580310eb1cfbfdf291bf12﷬﷔1﷬﷭TSfqMGhubq3Wo_YJ2DPDMw==uamsBPwTQkKsaUFDGX6wfzx5VizhgmPQ2sk=﷮﷯</client_secret><client_type>integration_as_a_service</client_type><client_uuid>9636a1e8eba3839030f9f95ccad0cdac</client_uuid><code_challenge_method>S256</code_challenge_method><comments/><default_grant_type>client_credentials</default_grant_type><extend_refresh_token_expiry>false</extend_refresh_token_expiry><id_token_lifespan>86400</id_token_lifespan><jwt_provider/><login_url/><logo_url/><message_signature_lifespan>60</message_signature_lifespan><mobile_client>false</mobile_client><name>HP Alert OAuth</name><oauth_api_script/><only_rest_processor>false</only_rest_processor><protocol_name/><public_client>false</public_client><redirect_url/><refresh_token_lifespan>8640000</refresh_token_lifespan><refresh_token_url/><restricted_binding>false</restricted_binding><revoke_token_url/><salt/><scope_restriction_status>restricted</scope_restriction_status><send_client_credentials_as>request_body_parameter</send_client_credentials_as><skip_authorize>false</skip_authorize><sub_claim>sys_id</sub_claim><sys_class_name>oauth_entity</sys_class_name><sys_created_by>aditi.khanna</sys_created_by><sys_created_on>2026-09-22 09:36:33</sys_created_on><sys_id>d636a1e8eba3839030f9f95ccad0cdac</sys_id><sys_mod_count>4</sys_mod_count><sys_name>HP Alert OAuth</sys_name><sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package><sys_policy/><sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope><sys_update_name>oauth_entity_d636a1e8eba3839030f9f95ccad0cdac</sys_update_name><sys_updated_by>aditi.khanna</sys_updated_by><sys_updated_on>2026-10-15 13:43:38</sys_updated_on><token_format>opaque</token_format><token_url/><type>client</type><use_mutual_auth>false</use_mutual_auth><use_pkce>false</use_pkce><user display_value="AlertManagement ">872e14092b1303d0eb1cfbfdf291bf4f</user></oauth_entity></record_update>]]></payload>
+        <payload_hash>666624594</payload_hash>
+        <record_name>HP Alert OAuth</record_name>
+        <reverted_from/>
+        <source>82d5dbc92b23c310eb1cfbfdf291bf70</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-10-15 13:43:38</sys_created_on>
+        <sys_id>978b7404eb80d31430f9f95ccad0cda6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_recorded_at>1a13fcddc0c0000001</sys_recorded_at>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-15 13:43:38</sys_updated_on>
+        <type>Application Registries</type>
+        <update_guid>df8b74046d80d31455018c0ab62720a4</update_guid>
+        <update_guid_history>df8b74046d80d31455018c0ab62720a4:666624594,bb7bf0048e80d314761b95a675b56048:1401917714,09f9e1e01ae38390dd3d67c783f591dc:-463672387,afd7e96cada383905a8754660bbd37cf:801349491,f36669e89ba38390b1df1adfb3a517d8:-2039697635</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete display_value="HP Alert OAuth">34cbf880eb80d31430f9f95ccad0cdb6</sys_audit_delete>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>aditi.khanna</sys_created_by>
+        <sys_created_on>2026-10-15 13:44:33</sys_created_on>
+        <sys_db_object display_value="" name="oauth_entity">oauth_entity</sys_db_object>
+        <sys_id>057542860ef1473c93705b83678351f1</sys_id>
+        <sys_metadata>d636a1e8eba3839030f9f95ccad0cdac</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>HP Alert OAuth</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>oauth_entity_d636a1e8eba3839030f9f95ccad0cdac</sys_update_name>
+        <sys_update_version display_value="oauth_entity_d636a1e8eba3839030f9f95ccad0cdac">978b7404eb80d31430f9f95ccad0cda6</sys_update_version>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-15 13:44:33</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

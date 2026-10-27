@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="" label="WXP Alert Log" language="en" table="x_hpws_wrkfrcexpam_incoming_alert_log">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element/>
+            <help/>
+            <hint/>
+            <label>WXP Alert Log</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <plural>WXP Alert Logs</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>aditi.khanna</sys_created_by>
+            <sys_created_on>2026-09-28 08:37:06</sys_created_on>
+            <sys_mod_count>3</sys_mod_count>
+            <sys_name>WXP Alert Log</sys_name>
+            <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+            <sys_update_name>sys_documentation_x_hpws_wrkfrcexpam_incoming_alert_log__en</sys_update_name>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-26 16:16:17</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

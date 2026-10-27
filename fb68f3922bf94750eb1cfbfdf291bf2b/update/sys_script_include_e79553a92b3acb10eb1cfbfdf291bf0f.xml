@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.WrkfrcExpAMAlertUtils</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description>Utility for Alert Management</description>
+        <mobile_callable>false</mobile_callable>
+        <name>WrkfrcExpAMAlertUtils</name>
+        <sandbox_callable>true</sandbox_callable>
+        <script><![CDATA[var WrkfrcExpAMAlertUtils = Class.create();
+WrkfrcExpAMAlertUtils.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+    CALLBACK_EVENT: 'x_hpws_wrkfrcexpam.itsm.callback',
+    CALLBACK_MAX_ATTEMPTS: 3,
+    CALLBACK_RETRY_MINUTES: [2, 10],
+    HTTP_TIMEOUT_MS: 30000,
+
+    getIdentifier: function() {
+        return gs.getProperty('x_hpws_wrkfrcexpam.identifier');
+    },
+
+    isSingleRecord: function() {
+
+        var ga = new GlideAggregate('x_hpws_wrkfrcexpam_tenant_list');
+        ga.addAggregate('COUNT');
+        ga.query();
+
+        if (ga.next()) {
+            return ga.getAggregate('COUNT') == 1; //returns true  if count is 1 else false
+        }
+
+        return false;
+    },
+
+    getBaseURL: function() {
+        var instance_name = gs.getProperty('x_hpws_wrkfrcexpam.fastn_api_baseurl');
+        return instance_name;
+    },
+
+    callAPI: function(restMessageName, params, tenantId) {
+        var baseURL = this.getBaseURL();
+        if (!baseURL) {
+            gs.warn("HP WXP Alert Management: Not configured - the Fastn base URL (x_hpws_wrkfrcexpam.fastn_api_baseurl) is empty. Complete the Setup.");
+            return this._notSent("Base URL not found.");
+        }
+
+        // x-fastn-space-tenantid names the tenant the call is for: the tenant of the alert it acts
+        // for (from the Incoming Alert Log), else the connection tenant property. Setup no longer
+        // asks for the connection tenant, so only a call with neither is stopped.
+        var tenant = ('' + (tenantId || gs.getProperty("x_hpws_wrkfrcexpam.tenants", ""))).trim();
+        if (!tenant) {
+            gs.warn("HP WXP Alert Management: Not sent - no tenant: the alert named none and the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty.");
+            return this._notSent("No tenant for this call: the alert named none and the connection tenant (x_hpws_wrkfrcexpam.tenants) is empty.");
+        }
+
+        try {
+            var r = new sn_ws.RESTMessageV2('HP WXP Alert Management', restMessageName);
+            r.setRequestHeader("Content-Type", "application/json");
+            r.setRequestHeader("x-fastn-space-id", gs.getProperty("x_hpws_wrkfrcexpam.fastn.space.id"));
+            r.setRequestHeader("stage", "LIVE");
+            r.setRequestHeader("x-fastn-api-key", gs.getProperty("x_hpws_wrkfrcexpam.api.fastn.api.key"));
+            r.setRequestHeader("x-fastn-space-tenantid", tenant);
+            r.setStringParameterNoEscape('base_url', baseURL);
+            for (var param in params) {
+                r.setStringParameterNoEscape(param, params[param]);
+            }
+
+            // One synchronous call with a timeout. The callback runs it from a Script Action,
+            // outside the incident's transaction, so no user or inbound request waits on Fastn.
+            r.setHttpTimeout(this.HTTP_TIMEOUT_MS);
+            var response = r.execute();
+            var httpStatus = parseInt(response.getStatusCode(), 10) || 0;
+            return {
+                "success": httpStatus > 199 && httpStatus < 300,
+                "statusCode": httpStatus,
+                "responseBody": response.getBody(),
+                "retryable": httpStatus === 0 || httpStatus >= 500
+            };
+        } catch (e) {
+            return {
+                "success": false,
+                "statusCode": 0,
+                "responseBody": '' + e,
+                "retryable": true
+            };
+        }
+    },
+
+    _notSent: function(reason) {
+        return {
+            "success": false,
+            "statusCode": 0,
+            "responseBody": reason,
+            "retryable": false,
+            "notSent": true
+        };
+    },
+
+    _getAlertDetails: function(incidentGR) {
+
+        var result = {
+            tenantId: null,
+            alertRuleId: null,
+            fleetAlertId: null,
+            deviceAlertId: null
+        };
+
+        // The log row of the alert that created or last updated this incident. tenant_id is the
+        // tenant the alert itself named.
+        var logGR = new GlideRecordSecure('x_hpws_wrkfrcexpam_incoming_alert_log');
+        logGR.addQuery('incident', incidentGR.getUniqueValue());
+        logGR.orderByDesc('sys_created_on');
+        logGR.setLimit(1);
+        logGR.query();
+        if (logGR.next()) {
+            result.tenantId = logGR.getValue('tenant_id') || null;
+            result.alertRuleId = logGR.getValue('alert_rule_id') || null;
+            result.fleetAlertId = logGR.getValue('fleet_alert_id') || null;
+            result.deviceAlertId = logGR.getValue('device_alert_id') || null;
+        }
+        // A re-post that left the tenant out keeps the tenant an earlier alert for this incident named.
+        if (!result.tenantId) {
+            var namedGR = new GlideRecordSecure('x_hpws_wrkfrcexpam_incoming_alert_log');
+            namedGR.addQuery('incident', incidentGR.getUniqueValue());
+            namedGR.addNotNullQuery('tenant_id');
+            namedGR.orderByDesc('sys_created_on');
+            namedGR.setLimit(1);
+            namedGR.query();
+            if (namedGR.next())
+                result.tenantId = namedGR.getValue('tenant_id');
+        }
+        // The connection tenant property is only the fallback for an incident no alert named a
+        // tenant for. With both empty, callAPI sends nothing.
+        result.tenantId = result.tenantId || gs.getProperty('x_hpws_wrkfrcexpam.tenants') || null;
+
+        return result;
+    },
+
+    buildITSMCallbackPayload: function(incidentGR, eventType) {
+
+        var alertDetails = this._getAlertDetails(incidentGR);
+
+        return {
+            input: {
+                result: {
+                    eventType: eventType,
+                    schemaVersion: "1.0",
+                    tenantId: alertDetails.tenantId,
+                    alertRuleId: alertDetails.alertRuleId,
+                    fleetAlertId: alertDetails.fleetAlertId,
+                    deviceAlertId: alertDetails.deviceAlertId,
+                    itsmType: "SERVICENOW",
+                    incidentId: incidentGR.getUniqueValue(),
+                    displayId: incidentGR.number + '',
+                    newState: incidentGR.state.getDisplayValue(),
+                    assignedTo: incidentGR.assigned_to.nil() ? null : incidentGR.assigned_to.toString(),
+                    resolvedAt: incidentGR.resolved_at.nil() ? null : incidentGR.resolved_at.getDisplayValue(),
+                    priority: incidentGR.priority.getDisplayValue(),
+                    comments: null,
+                    processedAt: new GlideDateTime().getValue().replace(' ', 'T') + 'Z',
+                    error: null
+                }
+            }
+        };
+    },
+
+    sendITSMCallback: function(incidentGR, eventType) {
+
+        var payload = this.buildITSMCallbackPayload(incidentGR, eventType);
+
+        // The header names the same tenant as the body: the one the incident's alert came from.
+        return this.callAPI('ITSM Callback', {
+            payload: JSON.stringify(payload)
+        }, payload.input.result.tenantId);
+    },
+
+    /**
+     * Called by the "HP WXP AM ITSM Callback" Script Action, never inside the incident's own save.
+     * Retries only when Fastn gave no answer or a 5xx, by scheduling the event again; after the last
+     * attempt, or on 401/403, it raises the integration failure event as before.
+     */
+    deliverITSMCallback: function(incidentGR, eventType, attempt) {
+        if (!incidentGR || !incidentGR.isValidRecord())
+            return;
+
+        var result = this.sendITSMCallback(incidentGR, eventType);
+        if (result.success || result.notSent)
+            return;
+
+        if (result.retryable && attempt < this.CALLBACK_MAX_ATTEMPTS) {
+            var when = new GlideDateTime();
+            when.addSeconds(60 * this.CALLBACK_RETRY_MINUTES[attempt - 1]);
+            gs.eventQueueScheduled(this.CALLBACK_EVENT, incidentGR, eventType, '' + (attempt + 1), when);
+            return;
+        }
+
+        var status = result.statusCode;
+        var detail = "restMessage: ITSM Callback, event: " + eventType + ", incident: " + incidentGR.getValue('number') +
+            ", attempt: " + attempt + ", httpStatus: " + status + ", responseBody: " + result.responseBody;
+        // A 404 or other 4xx means Fastn does not know the alert. That is a data case, not a communication failure.
+        if (!status || status === 401 || status === 403 || status >= 500) {
+            gs.error("HP WXP Alert Management integration failure - " + detail);
+            gs.eventQueue("x_hpws_wrkfrcexpam.hp.failure.notify", incidentGR,
+                gs.getProperty("x_hpws_wrkfrcexpam.notify_failure_group"), result.responseBody + "||" + status);
+        } else {
+            gs.warn("HP WXP Alert Management request rejected by Fastn - " + detail);
+        }
+    },
+
+    type: 'WrkfrcExpAMAlertUtils'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-19 13:41:18</sys_created_on>
+        <sys_id>e79553a92b3acb10eb1cfbfdf291bf0f</sys_id>
+        <sys_mod_count>31</sys_mod_count>
+        <sys_name>WrkfrcExpAMAlertUtils</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_e79553a92b3acb10eb1cfbfdf291bf0f</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-26 14:35:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

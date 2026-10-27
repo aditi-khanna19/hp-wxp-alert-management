@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege">
+    <sys_scope_privilege action="DELETE">
+        <operation>execute</operation>
+        <source_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</source_scope>
+        <status>allowed</status>
+        <sys_class_name>sys_scope_privilege</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:52:54</sys_created_on>
+        <sys_id>93ec6ad52b760b10eb1cfbfdf291bf0d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ImportSetTransformer.setImportSetID</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_scope_privilege_93ec6ad52b760b10eb1cfbfdf291bf0d</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-08-18 15:52:54</sys_updated_on>
+        <target_name>ImportSetTransformer.setImportSetID</target_name>
+        <target_scope display_value="Global">global</target_scope>
+        <target_type>scriptable</target_type>
+    </sys_scope_privilege>
+    <sys_update_version action="INSERT_OR_UPDATE">
+        <action>DELETE</action>
+        <application display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</application>
+        <file_path/>
+        <instance_id>a1f87d71ff0c1290c812f8e4fc4fd92e</instance_id>
+        <instance_name>ven07367</instance_name>
+        <name>sys_scope_privilege_93ec6ad52b760b10eb1cfbfdf291bf0d</name>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege"><sys_scope_privilege action="INSERT_OR_UPDATE"><operation>execute</operation><source_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</source_scope><status>allowed</status><sys_class_name>sys_scope_privilege</sys_class_name><sys_created_by>saurav.sarkar</sys_created_by><sys_created_on>2026-08-18 15:52:54</sys_created_on><sys_id>93ec6ad52b760b10eb1cfbfdf291bf0d</sys_id><sys_mod_count>0</sys_mod_count><sys_name>ImportSetTransformer.setImportSetID</sys_name><sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package><sys_policy/><sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope><sys_update_name>sys_scope_privilege_93ec6ad52b760b10eb1cfbfdf291bf0d</sys_update_name><sys_updated_by>saurav.sarkar</sys_updated_by><sys_updated_on>2026-08-18 15:52:54</sys_updated_on><target_name>ImportSetTransformer.setImportSetID</target_name><target_scope display_value="Global">global</target_scope><target_type>scriptable</target_type></sys_scope_privilege></record_update>]]></payload>
+        <payload_hash>2130299585</payload_hash>
+        <record_name>ImportSetTransformer.setImportSetID</record_name>
+        <reverted_from/>
+        <source>f70d22192b760b10eb1cfbfdf291bfcd</source>
+        <source_table>sys_update_set</source_table>
+        <state>previous</state>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-08-18 15:52:54</sys_created_on>
+        <sys_id>5bec6ad52b760b10eb1cfbfdf291bf11</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_recorded_at>1a015935ccd0000001</sys_recorded_at>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-08-18 16:05:38</sys_updated_on>
+        <type>Cross scope privilege</type>
+        <update_guid>13ec6ad570760b10f084b45c4ade0110</update_guid>
+        <update_guid_history>13ec6ad570760b10f084b45c4ade0110:2130299585</update_guid_history>
+    </sys_update_version>
+    <sys_metadata_delete action="INSERT_OR_UPDATE">
+        <sys_audit_delete/>
+        <sys_class_name>sys_metadata_delete</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 08:43:41</sys_created_on>
+        <sys_db_object display_value="" name="sys_scope_privilege">sys_scope_privilege</sys_db_object>
+        <sys_id>0834b31682f14004a8044416ebf81790</sys_id>
+        <sys_metadata>93ec6ad52b760b10eb1cfbfdf291bf0d</sys_metadata>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ImportSetTransformer.setImportSetID</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_parent/>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_scope_delete display_value="">0f76448ba49b45f381d85f57fe986009</sys_scope_delete>
+        <sys_update_name>sys_scope_privilege_93ec6ad52b760b10eb1cfbfdf291bf0d</sys_update_name>
+        <sys_update_version display_value="sys_scope_privilege_93ec6ad52b760b10eb1cfbfdf291bf0d">5bec6ad52b760b10eb1cfbfdf291bf11</sys_update_version>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 08:43:41</sys_updated_on>
+    </sys_metadata_delete>
+</record_update>

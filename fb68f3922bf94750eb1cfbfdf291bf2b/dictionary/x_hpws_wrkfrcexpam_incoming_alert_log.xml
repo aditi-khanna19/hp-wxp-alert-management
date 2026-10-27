@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="0c1298ee2b2b8f10eb1cfbfdf291bfa6" label="WXP Alert Log" max_length="40" name="x_hpws_wrkfrcexpam_incoming_alert_log" type="collection">
+        <element label="Alert status" max_length="40" name="alert_status" type="string"/>
+        <element label="Schema version" max_length="20" name="schema_version" type="string"/>
+        <element label="Error" max_length="4000" name="error" type="string"/>
+        <element label="Event type" max_length="40" name="event_type" type="string"/>
+        <element label="Fleet alert ID" max_length="100" name="fleet_alert_id" type="string"/>
+        <element label="Alert UID" max_length="255" name="alert_uid" type="string"/>
+        <element label="Alert rule ID" max_length="100" name="alert_rule_id" type="string"/>
+        <element choice="1" label="Result" max_length="20" name="result" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Ignored" sequence="30" value="ignored"/>
+                <element inactive_on_update="false" label="Error" sequence="40" value="error"/>
+                <element inactive_on_update="false" label="Inserted" sequence="10" value="inserted"/>
+                <element inactive_on_update="false" label="Rejected" sequence="50" value="rejected"/>
+                <element inactive_on_update="false" label="Updated" sequence="20" value="updated"/>
+                <element inactive_on_update="false" label="Skipped" sequence="60" value="skipped"/>
+            </choice>
+        </element>
+        <element label="Tenant ID" max_length="64" name="tenant_id" type="string"/>
+        <element label="Device alert ID" max_length="100" name="device_alert_id" type="string"/>
+        <element label="Call ID" max_length="32" name="call_id" type="string"/>
+        <element label="Incident" max_length="32" name="incident" reference="incident" type="reference"/>
+        <element label="Alert data" max_length="4000" name="alert_data" type="string"/>
+        <element attributes="json_view=true" label="Request payload" max_length="65000" name="request_payload" type="string"/>
+        <index name="index">
+            <element name="incident"/>
+        </index>
+    </element>
+</database>

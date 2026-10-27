@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_transform_script">
+    <sys_transform_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <map display_value="HP WXP Alert to Incident">ccf5939f2b750710eb1cfbfdf291bf79</map>
+        <order>100</order>
+        <script><![CDATA[(function runTransformScript(source, map, log, target) {
+
+    // Every column the field maps parse must be valid JSON. If one is not, fail the row
+    // here rather than let a field map throw halfway through the transform.
+    try {
+        JSON.parse(source.u_companydetails || '{}');
+        JSON.parse(source.u_devicedetails || '{}');
+        JSON.parse(source.u_userdetails || '{}');
+    } catch (e) {
+        source.sys_import_state = 'error';
+        source.sys_import_state_comment = e.message;
+        log.error('Alert Transform Failed: ' + e.message);
+        ignore = true;
+        return;
+    }
+
+})(source, map, log, target);]]></script>
+        <sys_class_name>sys_transform_script</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-07-08 12:06:54</sys_created_on>
+        <sys_id>cfef6a4ceb064b1030f9f95ccad0cdd1</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>onBefore</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_transform_script_cfef6a4ceb064b1030f9f95ccad0cdd1</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 12:25:26</sys_updated_on>
+        <when>onBefore</when>
+    </sys_transform_script>
+</record_update>

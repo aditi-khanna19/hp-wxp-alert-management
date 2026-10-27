@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="result" table="x_hpws_wrkfrcexpam_incoming_alert_log" version="3">
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>result</element>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:58</sys_created_on>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>result</sys_name>
+            <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+            <sys_update_name>sys_choice_x_hpws_wrkfrcexpam_incoming_alert_log_result</sys_update_name>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:58</sys_updated_on>
+        </sys_choice_set>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Inserted</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>10</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:58</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:58</sys_updated_on>
+            <value>inserted</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Updated</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>20</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:58</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:58</sys_updated_on>
+            <value>updated</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Ignored</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>30</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:58</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:58</sys_updated_on>
+            <value>ignored</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Error</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>40</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:58</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:58</sys_updated_on>
+            <value>error</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Rejected</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>50</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:59</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:59</sys_updated_on>
+            <value>rejected</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>result</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Skipped</label>
+            <language>en</language>
+            <name>x_hpws_wrkfrcexpam_incoming_alert_log</name>
+            <sequence>60</sequence>
+            <synonyms/>
+            <sys_created_by>saurav.sarkar</sys_created_by>
+            <sys_created_on>2026-10-22 17:43:59</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>saurav.sarkar</sys_updated_by>
+            <sys_updated_on>2026-10-22 17:43:59</sys_updated_on>
+            <value>skipped</value>
+        </sys_choice>
+    </sys_choice>
+</record_update>

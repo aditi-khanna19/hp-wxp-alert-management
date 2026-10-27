@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($scope, $timeout) {
+    var c = this;
+    var STORAGE_KEY = "dm_failure_config";
+    var isSaving = false;
+
+
+    c.email = '';
+    c.emailError = '';
+
+
+    function showToast(message, type) {
+        document.dispatchEvent(new CustomEvent("dm.showToast", {
+            detail: {
+                message: message,
+                type: type
+            }
+        }));
+    }
+
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+
+    function validate() {
+        if (!c.email)
+            c.emailError = "Please enter an email";
+        else if (!isValidEmail(c.email))
+            c.emailError = "Invalid email format";
+        else
+            c.emailError = '';
+    }
+
+
+    function fetchEmailFromServer() {
+
+
+        if (!c.group || !c.group.value) return;
+
+
+        c.server.get({
+            action: 'getGroupEmail',
+            group_id: c.group.value
+        }).then(function(res) {
+            c.email = res.data.email || '';
+            validate();
+        });
+    }
+
+
+    function loadState() {
+        var saved = sessionStorage.getItem(STORAGE_KEY);
+
+
+        if (saved) {
+            try {
+                var data = JSON.parse(saved);
+                c.email = data.email || '';
+                c.group = data.group || null;
+                validate();
+                return true; // saved state found
+            } catch (e) {}
+        }
+        return false; // no saved state
+    }
+
+
+    function loadDefaults() {
+        c.server.get({
+            action: 'loadDefaults'
+        }).then(function(res) {
+            if (res.data.defaultGroup) {
+                c.group = res.data.defaultGroup;
+                c.email = res.data.defaultEmail || '';
+                validate();
+            }
+        });
+    }
+
+
+    function saveState() {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+            email: c.email,
+            group: c.group
+        }));
+    }
+
+
+    $scope.$on('setup.reset', function() {
+        sessionStorage.removeItem(STORAGE_KEY);
+        c.group = null;
+        c.email = '';
+    });
+
+
+    c.$onInit = function() {
+        var hasSavedState = loadState();
+        if (!hasSavedState) {
+            loadDefaults();
+        }
+    };
+
+
+    c.onGroupChange = function() {
+        fetchEmailFromServer();
+    };
+
+
+    window.addEventListener('focus', function() {
+
+
+        if (isSaving) return;
+
+
+        if (c.group && c.group.value) {
+            $timeout(function() {
+                fetchEmailFromServer();
+            });
+        }
+    });
+
+
+    c.openGroupRecord = function() {
+
+
+        if (!c.group || !c.group.value) return;
+
+
+        var url = window.location.origin +
+            '/nav_to.do?uri=sys_user_group.do?sys_id=' + c.group.value;
+        window.location.href = url;
+
+
+    };
+
+
+    c.saveFailureConfig = function() {
+        if (!c.group || !c.group.value) return;
+
+
+        isSaving = true;
+        c.showSuccess = false;
+
+
+        c.server.get({
+            action: 'saveFailureConfig',
+            group_id: c.group.value,
+            email: c.email
+        }).then(function() {
+
+
+            saveState();
+
+
+            c.showSuccess = true;
+            isSaving = false;
+
+
+            $timeout(function() {
+                c.showSuccess = false;
+            }, 5000);
+        });
+    };
+
+
+};]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.section {&#13;
+  display: none;&#13;
+}&#13;
+&#13;
+.am-card {&#13;
+    position: relative;&#13;
+    background: #ffffff;&#13;
+    border: 2px solid #e5e7eb !important;&#13;
+    border-radius: 10px;&#13;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);&#13;
+    margin-bottom: 20px;&#13;
+}&#13;
+&#13;
+.am-card-header {&#13;
+    display: flex;&#13;
+    justify-content: space-between;&#13;
+    align-items: center;&#13;
+    padding: 10px 14px;&#13;
+    font-size: 16px;&#13;
+    font-weight: 600;&#13;
+    color: #111827;&#13;
+    background: #f9fafb;&#13;
+    border-bottom: 1px solid #e5e7eb;&#13;
+}&#13;
+&#13;
+.am-header-text {&#13;
+    flex: 1;&#13;
+}&#13;
+&#13;
+.am-header-actions {&#13;
+    display: flex;&#13;
+    gap: 8px;&#13;
+    margin-left: 16px;&#13;
+}&#13;
+&#13;
+.am-card-body {&#13;
+    padding: 20px;&#13;
+}&#13;
+&#13;
+.am-subtitle {&#13;
+    color: #64748b;&#13;
+    font-size: 13px;&#13;
+    margin: 0 0 16px 0;&#13;
+}&#13;
+&#13;
+.am-field label {&#13;
+    display: block;&#13;
+    font-size: 13px;&#13;
+    color: #6b7280;&#13;
+    margin-bottom: 6px;&#13;
+}&#13;
+&#13;
+.form-control[readonly] {&#13;
+    background: #f3f4f6;&#13;
+    cursor: not-allowed;&#13;
+    color: #4b5563;&#13;
+}&#13;
+&#13;
+.am-link-btn {&#13;
+    padding-left: 0;&#13;
+    margin-top: 6px;&#13;
+    font-size: 12px;&#13;
+}&#13;
+&#13;
+.am-toast {&#13;
+    position: absolute;&#13;
+    top: 15px;&#13;
+    left: 50%;&#13;
+    transform: translateX(-50%);&#13;
+    z-index: 9999;&#13;
+&#13;
+    background: #E7F6EC;&#13;
+  	border: 1px solid #9FE0B5;&#13;
+    color: #006B50;&#13;
+    border-radius: 4px;&#13;
+    padding: 10px 20px;&#13;
+    font-weight: 600;&#13;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The failure notification configuration widget. Allows admins to select a ServiceNow user group and associate its email address to receive failure notification emails when event processing errors occur. Includes group lookup via record picker and email validation.</description>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>hp-wxp-am-failure-notification</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP AM Failure Notification</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function () {
+var action = input && input.action;
+
+
+if (action == 'getGroupEmail') {
+
+
+var grp = new GlideRecordSecure('sys_user_group');
+
+
+if (input.group_id && grp.get(input.group_id)) {
+            data.email = grp.getValue('email') || '';
+        } else {
+            data.email = '';
+        }
+    }
+
+
+if (action == 'saveFailureConfig') {
+        gs.setProperty('x_hpws_wrkfrcexpam.notify_failure_group', input.email);
+    }
+
+
+if (action == 'loadDefaults') {
+        data.defaultGroup = null;
+        data.defaultEmail = '';
+
+
+var savedEmail = gs.getProperty('x_hpws_wrkfrcexpam.notify_failure_group', '');
+
+
+if (savedEmail) {
+            var grp = new GlideRecordSecure('sys_user_group');
+            grp.addQuery('email', savedEmail);
+            grp.setLimit(1);
+            grp.query();
+
+
+if (grp.next()) {
+                data.defaultGroup = {
+                    value: grp.getUniqueValue(),
+                    displayValue: grp.getDisplayValue('name')
+                };
+                data.defaultEmail = savedEmail;
+            }
+        }
+    }
+
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-21 08:35:35</sys_created_on>
+        <sys_id>2695649a2bb28350eb1cfbfdf291bfd1</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>HP WXP AM Failure Notification</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_2695649a2bb28350eb1cfbfdf291bfd1</sys_update_name>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-09 14:10:34</sys_updated_on>
+        <template><![CDATA[<!-- Failure Notification Card -->
+<div class="am-card">
+
+    <div class="am-card-header">
+        <div class="am-header-text">
+            Failure Notification Configuration
+        </div>
+
+        <div class="am-header-actions">
+            <button class="btn btn-primary btn-sm"
+                    ng-click="c.saveFailureConfig()"
+                    ng-disabled="!c.email || c.emailError">
+                Save
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div ng-if="c.showSuccess" class="am-toast">
+        ✅ Saved Successfully
+    </div>
+
+    <div class="am-card-body">
+
+        <div class="am-subtitle">
+            Select a group to receive failure notifications via email.
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-6 am-field">
+                <label>Group</label>
+
+                <sn-record-picker
+                    field="c.group"
+                    table="'sys_user_group'"
+                    display-field="'name'"
+                    value-field="'sys_id'"
+                    search-fields="'name,email'"
+                    on-change="c.onGroupChange()">
+                </sn-record-picker>
+            </div>
+
+            <div class="col-sm-6 am-field">
+                <label>Email</label>
+
+                <input type="text"
+                       ng-model="c.email"
+                       class="form-control"
+                       ng-readonly="true" />
+
+                <div class="text-danger" ng-if="c.emailError">
+                    {{c.emailError}}
+                </div>
+
+                <button class="btn btn-link btn-sm am-link-btn"
+                        ng-if="c.group && c.group.value"
+                        ng-click="c.openGroupRecord()">
+                    Open Group to Fix Email
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>]]></template>
+    </sp_widget>
+</record_update>

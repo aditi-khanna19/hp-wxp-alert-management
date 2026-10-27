@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_hpws_wrkfrcexpam.AlertApiDebug</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Debug log of calls to the /alerts and /lookups APIs, controlled by x_hpws_wrkfrcexpam.logging.verbosity.</description>
+        <mobile_callable>false</mobile_callable>
+        <name>AlertApiDebug</name>
+        <sandbox_callable>false</sandbox_callable>
+        <script><![CDATA[var AlertApiDebug = Class.create();
+AlertApiDebug.prototype = {
+    // Debug log of calls to the /alerts and /lookups APIs, written to Application Logs with
+    // gs.debug(). It writes only when x_hpws_wrkfrcexpam.logging.verbosity - the platform's
+    // log-level property for this scope - is 'debug'; at any other level nothing is built.
+    VERBOSITY_PROPERTY: 'x_hpws_wrkfrcexpam.logging.verbosity',
+    // Authorization and cookie headers are never logged.
+    HEADERS: ['content-type', 'content-length', 'accept', 'if-none-match', 'user-agent', 'x-forwarded-for'],
+    // syslog.message holds 4000 characters; longer text is written in numbered parts.
+    CHUNK: 3800,
+
+    initialize: function(endpoint) {
+        this.endpoint = endpoint;
+        this.enabled = gs.getProperty(this.VERBOSITY_PROPERTY, 'info') == 'debug';
+        this.started = new GlideDateTime().getNumericValue();
+        // Always set: AlertIngest stamps it on every Incoming Alert Log row of the call.
+        this.callId = gs.generateGUID().substring(0, 8);
+    },
+
+    /** The call as received; rawBody is the request body exactly as sent, when there is one. */
+    request: function(request, rawBody) {
+        if (!this.enabled)
+            return;
+        var headers = {};
+        for (var i = 0; i < this.HEADERS.length; i++) {
+            var value = request.getHeader(this.HEADERS[i]);
+            if (value)
+                headers[this.HEADERS[i]] = '' + value;
+        }
+        this._write('request', JSON.stringify({
+            user: gs.getUserName(),
+            url: '' + request.url,
+            headers: headers
+        }));
+        if (rawBody !== undefined)
+            this._write('body', rawBody || '(empty)');
+    },
+
+    /** What the call returned, and how long it took. */
+    response: function(status, body) {
+        if (!this.enabled)
+            return;
+        var elapsed = new GlideDateTime().getNumericValue() - this.started;
+        this._write('response', 'HTTP ' + status + ' in ' + elapsed + ' ms' +
+            (body === undefined ? '' : ' ' + (typeof body === 'string' ? body : JSON.stringify(body))));
+    },
+
+    _write: function(kind, text) {
+        var prefix = '[HP WXP AM API] ' + this.endpoint + ' ' + this.callId + ' ' + kind;
+        var parts = Math.max(1, Math.ceil(text.length / this.CHUNK));
+        for (var p = 0; p < parts; p++) {
+            // The text goes in as a parameter so braces in JSON are never read as placeholders.
+            gs.debug(prefix + (parts > 1 ? ' (' + (p + 1) + '/' + parts + ')' : '') + ': {0}',
+                text.substr(p * this.CHUNK, this.CHUNK));
+        }
+    },
+
+    type: 'AlertApiDebug'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>saurav.sarkar</sys_created_by>
+        <sys_created_on>2026-10-22 17:27:49</sys_created_on>
+        <sys_id>27f1b9d62b005b54eb1cfbfdf291bf2b</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>AlertApiDebug</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sys_script_include_27f1b9d62b005b54eb1cfbfdf291bf2b</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-22 17:44:04</sys_updated_on>
+    </sys_script_include>
+</record_update>

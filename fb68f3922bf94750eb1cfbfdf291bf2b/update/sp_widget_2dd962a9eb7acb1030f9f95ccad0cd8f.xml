@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[api.controller = function($scope, $location) {
+
+  $scope.scrollTo = function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+};]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.am-header {&#13;
+  position: fixed;&#13;
+  top: 0;&#13;
+  left: 0;&#13;
+  width: 100%;&#13;
+  z-index: 1000;&#13;
+&#13;
+  padding: 14px 24px 0 24px;&#13;
+  background-color: #f9fafb;&#13;
+  border-bottom: 1px solid #e5e7eb;&#13;
+}&#13;
+&#13;
+/* MAIN LAYOUT */&#13;
+.am-header-content {&#13;
+  max-width: 1200px;&#13;
+  margin: 0 auto;&#13;
+&#13;
+  display: flex;&#13;
+  align-items: center;&#13;
+  justify-content: space-between;&#13;
+  position: relative;&#13;
+}&#13;
+&#13;
+/* LEFT: Logo */&#13;
+.am-logo {&#13;
+  height: 60px;&#13;
+}&#13;
+&#13;
+/* CENTER: Title */&#13;
+.am-title {&#13;
+  position: absolute;&#13;
+  left: 40%;&#13;
+  transform: translateX(-50%);&#13;
+  &#13;
+  font-size: 22px;&#13;
+  font-weight: 600;&#13;
+  color: #111827;&#13;
+}&#13;
+&#13;
+/* NAVIGATION LINKS */&#13;
+.am-nav {&#13;
+  display: flex;&#13;
+  justify-content: center;&#13;
+  gap: 24px;&#13;
+  padding: 10px 0 10px 0;&#13;
+  margin-top: 8px;&#13;
+}&#13;
+&#13;
+.am-nav a {&#13;
+  color: #0076ce;&#13;
+  font-size: 13px;&#13;
+  font-weight: 500;&#13;
+  cursor: pointer;&#13;
+  text-decoration: none;&#13;
+  padding: 4px 12px;&#13;
+  border-radius: 6px;&#13;
+  transition: all 0.15s ease;&#13;
+}&#13;
+&#13;
+.am-nav a:hover {&#13;
+  color: #005fa3;&#13;
+  background: #e8f4fd;&#13;
+  text-decoration: none;&#13;
+}&#13;
+&#13;
+.am-nav a i {&#13;
+  margin-right: 5px;&#13;
+  font-size: 12px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description>The sticky navigation header at the top of the page. Displays the WXP logo on the left and centered navigation links (App Setup, Tenant Configuration) that scroll to the corresponding widget sections on click.</description>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>hp-wxp-am-header</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>HP WXP AM Header</name>
+        <option_schema/>
+        <public>false</public>
+        <roles>x_hpws_wrkfrcexpam.admin</roles>
+        <script><![CDATA[(function() {
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>jessica.braganza</sys_created_by>
+        <sys_created_on>2026-08-19 10:17:52</sys_created_on>
+        <sys_id>2dd962a9eb7acb1030f9f95ccad0cd8f</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>HP WXP AM Header</sys_name>
+        <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
+        <sys_update_name>sp_widget_2dd962a9eb7acb1030f9f95ccad0cd8f</sys_update_name>
+        <sys_updated_by>saurav.sarkar</sys_updated_by>
+        <sys_updated_on>2026-10-26 15:44:05</sys_updated_on>
+        <template><![CDATA[<div class="am-header">
+
+  <div class="am-header-content">
+
+    <!-- LEFT: Logo -->
+    <img 
+         src="wxp_logo.png"
+         alt="WXP Logo"
+         class="am-logo"
+         />
+
+     <div class="am-title">
+      HP WXP Alert Management
+    </div>
+    <div class="am-nav">
+      <!--<a ng-click="scrollTo('hp-wxp-alert-management-tenant-config')"><i class="fa fa-building"></i> Tenant Configuration</a> -->
+    </div>
+
+  </div>
+
+</div>]]></template>
+    </sp_widget>
+</record_update>
