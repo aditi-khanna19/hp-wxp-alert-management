@@ -11,16 +11,16 @@
         <sys_created_by>aditi.khanna</sys_created_by>
         <sys_created_on>2026-07-03 07:03:01</sys_created_on>
         <sys_id>165a335e2bf94750eb1cfbfdf291bfdb</sys_id>
-        <sys_mod_count>30</sys_mod_count>
+        <sys_mod_count>31</sys_mod_count>
         <sys_name>x_hpws_wrkfrcexpam.fastn_api_baseurl</sys_name>
         <sys_package display_value="HP WXP Alert Management" source="x_hpws_wrkfrcexpam">fb68f3922bf94750eb1cfbfdf291bf2b</sys_package>
         <sys_policy/>
         <sys_scope display_value="HP WXP Alert Management">fb68f3922bf94750eb1cfbfdf291bf2b</sys_scope>
         <sys_update_name>sys_properties_165a335e2bf94750eb1cfbfdf291bfdb</sys_update_name>
-        <sys_updated_by>saurav.sarkar</sys_updated_by>
-        <sys_updated_on>2026-10-26 15:33:51</sys_updated_on>
+        <sys_updated_by>aditi.khanna</sys_updated_by>
+        <sys_updated_on>2026-10-27 06:45:31</sys_updated_on>
         <type>string</type>
-        <value>https://api.hp-poc.fastn.ai</value>
+        <value/>
         <write_roles>x_hpws_wrkfrcexpam.admin</write_roles>
     </sys_properties>
     <sys_translated_text action="delete_multiple" query="documentkey=165a335e2bf94750eb1cfbfdf291bfdb"/>
